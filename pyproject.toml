@@ -1,0 +1,21 @@
+[project]
+name = "Pacman"
+version = "0.1.0"
+description = "Recreate the famous arcade game Pac-man!"
+requires-python = ">=3.10"
+authors = [
+    { name = "qdecross", email = "qdecross@student.42lyon.fr" },
+    { name = "stmaire", email = "stmaire@student.42lyon.fr" }
+]
+
+dependencies = [
+    "pydantic",
+    "arcade"
+]
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "flake8",
+    "mypy"
+]
