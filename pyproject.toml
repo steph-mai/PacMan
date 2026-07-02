@@ -10,7 +10,8 @@ authors = [
 
 dependencies = [
     "pydantic",
-    "arcade"
+    "arcade",
+    "mazegenerator",
 ]
 
 [dependency-groups]
@@ -19,3 +20,6 @@ dev = [
     "flake8",
     "mypy"
 ]
+
+[tool.uv.sources]
+mazegenerator = { path = "mazegen/mazegenerator-2.0.2-py3-none-any.whl" }
