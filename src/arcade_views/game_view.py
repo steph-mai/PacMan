@@ -20,16 +20,16 @@ class GameView(arcade.View):
 
         rows = len(self.maze)
         cols = len(self.maze[0]) if rows > 0 else 0
+        start_row = ((self.window.width - (rows * CELL_SIZE)) / 2)
+        start_col = ((self.window.height + (cols * CELL_SIZE)) / 2)
 
         for r in range(rows):
             for c in range(cols):
                 cell_value = self.maze[r][c]
 
-                x_left = ((self.window.width
-                           - (rows * CELL_SIZE)) / 2) + (c * CELL_SIZE)
+                x_left = start_row + (c * CELL_SIZE)
                 x_right = x_left + CELL_SIZE
-                y_top = ((self.window.height
-                          + (cols * CELL_SIZE)) / 2) - (r * CELL_SIZE)
+                y_top = start_col - (r * CELL_SIZE)
                 y_bottom = y_top - CELL_SIZE
 
                 if cell_value & NORTH:
