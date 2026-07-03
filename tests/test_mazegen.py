@@ -1,0 +1,15 @@
+# test running with:
+# uv run tests/python test_mazegen.py
+
+from mazegenerator import MazeGenerator
+
+# Create a simple 20x20 maze
+maze_gen = MazeGenerator(size=(20, 20), perfect=False)
+
+# Get the maze structure
+maze_grid = maze_gen.maze
+shortest_path = maze_gen.shortest_path
+
+print(f"Maze dimensions: {len(maze_grid[0])}x{len(maze_grid)}")
+print(f"Entry: {maze_gen.maze_entry}, Exit: {maze_gen.maze_exit}")
+print(f"Shortest path length: {len(shortest_path)}")
