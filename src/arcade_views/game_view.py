@@ -30,7 +30,7 @@ class GameView(arcade.View):
         self.super_pacgums: set[tuple[int, int]] = set()
 
         # Placeholder waiting for actual config logic
-        pacgums_from_config = 250
+        pacgums_from_config = 400000
         self.setup_collectibles(pacgums_from_config)
 
     def setup_collectibles(self, config_pacgum_count: int = 42) -> None:
@@ -59,7 +59,8 @@ class GameView(arcade.View):
                 if not is_corner and not is_player_start and not is_solid_wall:
                     available_cells.append((r, c))
 
-        actual_pacgum_count = min(config_pacgum_count, len(available_cells))
+        actual_pacgum_count = min(config_pacgum_count,
+                                  int(len(available_cells) * 0.80))
 
         selected_cells = random.sample(available_cells, actual_pacgum_count)
 
