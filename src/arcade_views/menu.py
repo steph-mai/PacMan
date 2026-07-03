@@ -60,7 +60,7 @@ class MenuView(arcade.View):
         @game_btn.event("on_click")
         def on_click_game(event: arcade.gui.UIOnClickEvent) -> None:
             self.window.show_view(GameView(MazeGenerator
-                                           (size=(20, 20),
+                                           (size=(21, 21),
                                             perfect=False).maze))
 
         @quit_btn.event("on_click")
