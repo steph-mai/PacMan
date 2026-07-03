@@ -3,6 +3,7 @@ import arcade.gui
 # from arcade.gui.widgets import UISpriteWidget
 from mazegenerator import MazeGenerator
 from .game_view import GameView
+from ..obj.level import Level
 
 
 class MenuView(arcade.View):
@@ -59,9 +60,9 @@ class MenuView(arcade.View):
 
         @game_btn.event("on_click")
         def on_click_game(event: arcade.gui.UIOnClickEvent) -> None:
-            self.window.show_view(GameView(MazeGenerator
-                                           (size=(21, 21),
-                                            perfect=False).maze))
+            raw_maze = MazeGenerator(size=(20, 20), perfect=False).maze
+            current_level = Level(raw_maze)
+            self.window.show_view(GameView(current_level))
 
         @quit_btn.event("on_click")
         def on_click_quit(event: arcade.gui.UIOnClickEvent) -> None:
