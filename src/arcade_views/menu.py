@@ -1,6 +1,6 @@
 import arcade
 import arcade.gui
-from arcade.gui.widgets import UISpriteWidget
+# from arcade.gui.widgets import UISpriteWidget
 from mazegenerator import MazeGenerator
 from .game_view import GameView
 
