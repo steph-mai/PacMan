@@ -4,6 +4,7 @@ from typing import Any, List
 
 logger = logging.getLogger("pacman")
 
+
 class LevelConfig(BaseModel):
     width: int = Field(default=20)
     height: int = Field(default=20)
@@ -17,10 +18,9 @@ class LevelConfig(BaseModel):
             return 20
         if value > 100:
             logger.warning(f"Maze dimension '{value}' is too big. "
-                           f"Loading safe default value")
+                           f"Clamped to 20")
             return 20
         return value
-
 
 class Config(BaseModel):
     level: list[LevelConfig] = Field(
@@ -28,11 +28,12 @@ class Config(BaseModel):
     highscore_filename: str = Field(default="highscore.json")
     lives: int = Field(default=3)
     pacgum: int = Field(default=42)
+
     points_per_pacgum: int = Field(default=10)
-    points_per_super_pacgum = Field(default=50)
-    points_per_ghost = Field(default=200)
+    points_per_super_pacgum: int = Field(default=50)
+    points_per_ghost: int = Field(default=200)
     seed: int = Field(default=42)
-    level_max_time = Field(default=90)
+    level_max_time: int = Field(default=90)
 
     @field_validator("lives", mode="after")
     @classmethod
@@ -40,14 +41,11 @@ class Config(BaseModel):
         if lives < 1:
             logger.warning("Number of lives can't be inferior to 1. "
                            "Clamped to 3")
+            return 3
+
         if lives > 10:
             logger.warning("Number of lives can't be superior to 10. "
                            "Clamped to 3")
+            return 3
+
         return lives
-
-    @field_validator
-
-
-
-
-
