@@ -23,6 +23,8 @@ class Player:
             start_row (int): Initial row index in the maze grid.
             start_col (int): Initial column index in the maze grid.
         """
+        self.start_row: int = start_row
+        self.start_col: int = start_col
         self.row: int = start_row
         self.col: int = start_col
         self.config = config
@@ -46,6 +48,28 @@ class Player:
             self.row += 1
         elif direction == WEST and not (current_walls & WEST):
             self.col -= 1
+
+    def lose_life(self) -> bool:
+        """
+        Decrease the player's life count and reset their position to the start.
+
+        Returns:
+            bool: True if the player is dead (0 lives remaining),
+            False otherwise.
+        """
+        self.lives -= 1
+        self.row = self.start_row
+        self.col = self.start_col
+        return self.lives <= 0
+
+    def add_score(self, points: int) -> None:
+        """
+        Add points to the player's total score.
+
+        Args:
+            points (int): The amount of points to add.
+        """
+        self.score += points
 
     def draw(self, start_x_offset: float,
              start_y_offset: float,
