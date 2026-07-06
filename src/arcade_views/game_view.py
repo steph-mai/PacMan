@@ -1,5 +1,7 @@
 import arcade
 from ..obj.player import Player, NORTH, EAST, SOUTH, WEST
+from src.parsing.models import Config
+from mazegenerator import MazeGenerator
 
 CELL_SIZE = 32
 
@@ -9,20 +11,29 @@ class GameView(arcade.View):
     The main gameplay view displaying the maze and handling player actions.
     """
 
-    def __init__(self, maze: list[list[int]]) -> None:
+    def __init__(self, config: Config) -> None:
         """
         Initialize the game view, maze data, and player object.
         """
         super().__init__()
-        self.maze = maze
+        self.config = config
         arcade.set_background_color(arcade.color.WHITE)
 
-        self.rows = len(self.maze)
-        self.cols = len(self.maze[0]) if self.rows > 0 else 0
+        level_config = self.config.level[0]
+        level_width = level_config.width
+        level_height = level_config.height
 
-        start_row = self.rows // 2
+        mazegen = MazeGenerator(
+            size=(level_width, level_height), perfect=False)
+        self.maze = mazegen.maze
+        # pas de () après  mazegen.maze car @property dans mazegenerator.py
+        # permet d'utiliser une méthode comme une simple variable
+
+        self.cols = level_width
+        self.rows = level_height
         start_col = self.cols // 2
-        self.player = Player(start_row, start_col)
+        start_row = self.rows // 2
+        self.player = Player(start_row, start_col, self.config)
 
     def on_draw(self) -> None:
         """
@@ -30,8 +41,13 @@ class GameView(arcade.View):
         """
         self.clear()
 
-        start_x_offset = ((self.window.width - (self.rows * CELL_SIZE)) / 2)
-        start_y_offset = ((self.window.height + (self.cols * CELL_SIZE)) / 2)
+        # width = cols??
+        # height = rows??
+        # start_x_offset = ((self.window.width - (self.rows * CELL_SIZE)) / 2)
+        # start_y_offset = ((self.window.height + (self.cols * CELL_SIZE)) / 2)
+        start_x_offset = ((self.window.width - (self.cols * CELL_SIZE)) / 2)
+        start_y_offset = ((self.window.height + (self.rows * CELL_SIZE)) / 2)
+
 
         for r in range(self.rows):
             for c in range(self.cols):
