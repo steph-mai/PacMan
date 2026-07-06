@@ -41,10 +41,6 @@ class GameView(arcade.View):
         """
         self.clear()
 
-        # width = cols??
-        # height = rows??
-        # start_x_offset = ((self.window.width - (self.rows * CELL_SIZE)) / 2)
-        # start_y_offset = ((self.window.height + (self.cols * CELL_SIZE)) / 2)
         start_x_offset = ((self.window.width - (self.cols * CELL_SIZE)) / 2)
         start_y_offset = ((self.window.height + (self.rows * CELL_SIZE)) / 2)
 

@@ -54,6 +54,7 @@ class Config(BaseModel):
 
     @field_validator("pacgum", mode="after")
     @classmethod
+    # TODO definir un default pacgum, Pyd gere le minimum, Game view le max(80%)
     def clamp_pacgum(cls, pacgum: int) -> int:
         if pacgum < 10:
             logger.warning(f"Pacgum count {pacgum} is too low. "
@@ -73,6 +74,7 @@ class Config(BaseModel):
             "points_per_ghost", mode="after"
             )
     @classmethod
+    # TODO Dissocier les 3 pacgum 10, super pg 50 ghost 100
     def clamp_points(cls, points: int, info: ValidationInfo) -> int:
         if points < 0:
             logger.warning(f"{info.field_name} can not be negative. "
