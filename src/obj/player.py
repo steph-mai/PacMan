@@ -1,4 +1,5 @@
 import arcade
+from src.parsing.models import Config
 
 NORTH = 1
 EAST = 2
@@ -14,7 +15,7 @@ class Player:
     and handles movement logic with wall collisions.
     """
 
-    def __init__(self, start_row: int, start_col: int) -> None:
+    def __init__(self, start_row: int, start_col: int, config: Config) -> None:
         """
         Initialize the player at a specific grid position.
 
@@ -24,7 +25,7 @@ class Player:
         """
         self.row: int = start_row
         self.col: int = start_col
-        self.lives: int = 3
+        self.config = config
 
     def move(self, direction: int, maze: list[list[int]]) -> None:
         """
