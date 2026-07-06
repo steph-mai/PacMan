@@ -1,6 +1,5 @@
 import arcade
 from src.parsing.models import Config
-from src.obj.level import Level
 
 NORTH = 1
 EAST = 2

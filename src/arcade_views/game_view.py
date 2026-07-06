@@ -44,15 +44,15 @@ class GameView(arcade.View):
         self.pacgums: set[tuple[int, int]] = set()
         self.super_pacgums: set[tuple[int, int]] = set()
 
-        # Placeholder waiting for actual config logic
-        pacgums_from_config = 400000
-        self.setup_collectibles(pacgums_from_config)
+        self.setup_collectibles()
 
-    def setup_collectibles(self, config_pacgum_count: int = 42) -> None:
+    def setup_collectibles(self) -> None:
         """
         Populate the maze with pacgums and place super-pacgums
         in the 4 corners.
         """
+        config_pacgum_count = self.config.pacgum
+
         corners = [
             (0, 0),
             (0, self.cols - 1),

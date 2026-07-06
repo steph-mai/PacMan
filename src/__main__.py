@@ -1,5 +1,6 @@
 
 from .arcade_views.menu import MenuView
+from src.utils.logger_setup import setup_logger
 from src.parsing.loader import Loader
 import arcade
 import sys
@@ -10,6 +11,7 @@ pyglet.options['audio'] = ('silent',)
 def main() -> None:
     """Main function to run PacMan"""
     try:
+        setup_logger()
         loader = Loader()
         config_file = sys.argv[1] if len(sys.argv) == 2 else "config.json"
         config = loader.config_file_load(config_file)

@@ -6,10 +6,11 @@
   "points_per_ghost": 200,
   "level_max_time": 90,
   "seed": 42,
+  "pacgum": 42,
   "level": [
     {
-      "width": 16,
-      "height": 16
+      "width": 30,
+      "height": 30
     },
     {
       "width": 31,

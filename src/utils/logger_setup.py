@@ -30,7 +30,7 @@ def setup_logger() -> None:
         # si une autre lib(arcade, mazegen) a déjà appelé BasicConfig,
         # prendra en compte cette config
         handlers=[
-            logging.FileHandler("pacman.log", mode="w", encoding="utf-8"),
+            logging.FileHandler("pacman.log", mode="a", encoding="utf-8"),
             logging.StreamHandler()
         ]
     )
