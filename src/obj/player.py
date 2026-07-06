@@ -1,5 +1,6 @@
 import arcade
 from src.parsing.models import Config
+from src.obj.level import Level
 
 NORTH = 1
 EAST = 2
@@ -28,6 +29,8 @@ class Player:
         self.row: int = start_row
         self.col: int = start_col
         self.config = config
+        self.scores: int = 0
+        self.lives: int = self.config.lives
 
     def move(self, direction: int, maze: list[list[int]]) -> None:
         """
@@ -84,7 +87,6 @@ class Player:
         """
         x_center = start_x_offset + (self.col * cell_size) + (cell_size / 2)
         y_center = start_y_offset - (self.row * cell_size) - (cell_size / 2)
-
         arcade.draw_circle_filled(
             x_center,
             y_center,
