@@ -3,17 +3,18 @@ import arcade.gui
 # from arcade.gui.widgets import UISpriteWidget
 from mazegenerator import MazeGenerator
 from .game_view import GameView
-from ..obj.level import Level
+from src.parsing.models import Config
 
 
 class MenuView(arcade.View):
     """Main menu view for map selection."""
 
-    def __init__(self) -> None:
+    def __init__(self, config: Config) -> None:
         super().__init__()
         self.manager = arcade.gui.UIManager()
         self.v_box = arcade.gui.UIBoxLayout()
         self.t_box = arcade.gui.UIBoxLayout()
+        self.config = config
         # self.background = arcade.Sprite("inc/UI/background.png")
         # self.background_list: arcade.SpriteList[arcade.Sprite] = \
         #     arcade.SpriteList()
@@ -60,9 +61,7 @@ class MenuView(arcade.View):
 
         @game_btn.event("on_click")
         def on_click_game(event: arcade.gui.UIOnClickEvent) -> None:
-            raw_maze = MazeGenerator(size=(20, 20), perfect=False).maze
-            current_level = Level(raw_maze)
-            self.window.show_view(GameView(current_level))
+            self.window.show_view(GameView(self.config))
 
         @quit_btn.event("on_click")
         def on_click_quit(event: arcade.gui.UIOnClickEvent) -> None:
