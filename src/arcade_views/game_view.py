@@ -16,7 +16,9 @@ class GameView(arcade.View):
     The main gameplay view displaying the maze and handling player actions.
     """
 
-    def __init__(self, config: Config, level_index: int = 0) -> None:
+    def __init__(self, config: Config,
+                 level_index: int = 0,
+                 player: Player = None) -> None:
         """
         Initialize the game view, maze data, and player object.
         """
@@ -55,7 +57,11 @@ class GameView(arcade.View):
 
         start_row, start_col = self.level.find_valid_spawn_position()
 
-        self.player = Player(start_row, start_col, self.config)
+        if player is None:
+            self.player = Player(start_row, start_col, self.config)
+        else:
+            self.player = player
+            self.player.prepare_for_next_level(start_row, start_col)
 
         self.pacgums: set[tuple[int, int]] = set()
         self.super_pacgums: set[tuple[int, int]] = set()
@@ -105,6 +111,8 @@ class GameView(arcade.View):
         Args:
             delta_time (float): Time elapsed since the last frame.
         """
+        self.player.update_movement(delta_time, self.level.maze)
+
         current_pos = (self.player.row, self.player.col)
 
         if current_pos in self.pacgums:
@@ -116,12 +124,31 @@ class GameView(arcade.View):
             self.player.add_score(self.config.points_per_super_pacgum)
             # TODO: Make ghosts edible here
 
+        if not self.pacgums and not self.super_pacgums:
+            self.handle_level_complete()
+
         # Placeholder for Ghost Collision
         # if self.check_ghost_collision():
         #     is_dead = self.player.lose_life()
         #     if is_dead:
         #         print("Game Over!")
         #         # Trigger Game Over View
+
+    def handle_level_complete(self) -> None:
+        """
+        Process level completion. Transitions to the next level if available,
+        or prints victory if the game is finished.
+        """
+        if self.level_index + 1 < len(self.config.level):
+            # Pass the existing player object to the next Level View
+            next_view = GameView(self.config,
+                                 self.level_index + 1,
+                                 player=self.player)
+            self.window.show_view(next_view)
+        else:
+            # Game Completed
+            print(f"Game Won! Final Score: {self.player.score}")
+            # self.window.show_view(VictoryView(self.player.score))
 
     def on_draw(self) -> None:
         """
@@ -170,13 +197,13 @@ class GameView(arcade.View):
 
     def on_key_press(self, key: int, modifiers: int) -> None:
         """
-        Handle keyboard inputs to trigger player movement.
+        Queue the user's keyboard inputs for player movement.
         """
         if key in (arcade.key.UP, arcade.key.W):
-            self.player.move(NORTH, self.level.maze)
+            self.player.queue_direction(NORTH)
         elif key in (arcade.key.RIGHT, arcade.key.D):
-            self.player.move(EAST, self.level.maze)
+            self.player.queue_direction(EAST)
         elif key in (arcade.key.DOWN, arcade.key.S):
-            self.player.move(SOUTH, self.level.maze)
+            self.player.queue_direction(SOUTH)
         elif key in (arcade.key.LEFT, arcade.key.A):
-            self.player.move(WEST, self.level.maze)
+            self.player.queue_direction(WEST)
