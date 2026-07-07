@@ -1,10 +1,13 @@
 import arcade
 import random
+import logging
+import sys
 from ..obj.player import Player, NORTH, EAST, SOUTH, WEST
 from ..obj.level import Level
 from src.parsing.models import Config
 from mazegenerator import MazeGenerator
 
+logger = logging.getLogger("pacman")
 CELL_SIZE = 32
 
 
@@ -13,22 +16,35 @@ class GameView(arcade.View):
     The main gameplay view displaying the maze and handling player actions.
     """
 
-    def __init__(self, config: Config) -> None:
+    def __init__(self, config: Config, level_index: int = 0) -> None:
         """
         Initialize the game view, maze data, and player object.
         """
         super().__init__()
         self.config = config
+        self.level_index = level_index
         arcade.set_background_color(arcade.color.WHITE)
 
-        level_config = self.config.level[0]
+        safe_level_index = min(level_index, len(self.config.level) - 1)
+        level_config = self.config.level[safe_level_index]
         level_width = level_config.width
         level_height = level_config.height
 
-        mazegen = MazeGenerator(
-            size=(level_width, level_height), perfect=False)
+        current_seed = self.config.seed if (
+            self.level_index == 0) else (
+                random.randint(1, 9999999))
 
-        self.level = Level(mazegen.maze)
+        try:
+            mazegen = MazeGenerator(
+                size=(level_width, level_height),
+                perfect=False,
+                seed=current_seed)
+            self.level = Level(mazegen.maze)
+
+        except Exception as e:
+            logger.error(f"External MazeGenerator crashed: {e}.")
+            logger.error("Failed to load the level. Exiting game.")
+            sys.exit(1)
 
         self.maze = mazegen.maze
         # pas de () après  mazegen.maze car @property dans mazegenerator.py
@@ -93,11 +109,11 @@ class GameView(arcade.View):
 
         if current_pos in self.pacgums:
             self.pacgums.remove(current_pos)
-            self.player.add_score(10)  # Value can later be set from conf.json
+            self.player.add_score(self.config.points_per_pacgum)
 
         if current_pos in self.super_pacgums:
             self.super_pacgums.remove(current_pos)
-            self.player.add_score(50)  # Value can later be set from conf.json
+            self.player.add_score(self.config.points_per_super_pacgum)
             # TODO: Make ghosts edible here
 
         # Placeholder for Ghost Collision
@@ -115,7 +131,6 @@ class GameView(arcade.View):
 
         start_x_offset = ((self.window.width - (self.cols * CELL_SIZE)) / 2)
         start_y_offset = ((self.window.height + (self.rows * CELL_SIZE)) / 2)
-
 
         for r in range(self.rows):
             for c in range(self.cols):
