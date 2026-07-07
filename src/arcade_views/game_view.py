@@ -1,6 +1,7 @@
 import arcade
 import random
 from ..obj.player import Player, NORTH, EAST, SOUTH, WEST
+from ..obj.level import Level
 from src.parsing.models import Config
 from mazegenerator import MazeGenerator
 
@@ -26,28 +27,32 @@ class GameView(arcade.View):
 
         mazegen = MazeGenerator(
             size=(level_width, level_height), perfect=False)
+
+        self.level = Level(mazegen.maze)
+
         self.maze = mazegen.maze
         # pas de () après  mazegen.maze car @property dans mazegenerator.py
         # permet d'utiliser une méthode comme une simple variable
 
         self.cols = level_width
         self.rows = level_height
-        start_col = self.cols // 2
-        start_row = self.rows // 2
+
+        start_row, start_col = self.level.find_valid_spawn_position()
+
         self.player = Player(start_row, start_col, self.config)
 
         self.pacgums: set[tuple[int, int]] = set()
         self.super_pacgums: set[tuple[int, int]] = set()
 
-        # Placeholder waiting for actual config logic
-        pacgums_from_config = 400000
-        self.setup_collectibles(pacgums_from_config)
+        self.setup_collectibles()
 
-    def setup_collectibles(self, config_pacgum_count: int = 42) -> None:
+    def setup_collectibles(self) -> None:
         """
         Populate the maze with pacgums and place super-pacgums
         in the 4 corners.
         """
+        config_pacgum_count = self.config.pacgum
+
         corners = [
             (0, 0),
             (0, self.cols - 1),
@@ -108,10 +113,6 @@ class GameView(arcade.View):
         """
         self.clear()
 
-        # width = cols??
-        # height = rows??
-        # start_x_offset = ((self.window.width - (self.rows * CELL_SIZE)) / 2)
-        # start_y_offset = ((self.window.height + (self.cols * CELL_SIZE)) / 2)
         start_x_offset = ((self.window.width - (self.cols * CELL_SIZE)) / 2)
         start_y_offset = ((self.window.height + (self.rows * CELL_SIZE)) / 2)
 
