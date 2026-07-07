@@ -1,3 +1,8 @@
+"""Parsing model definitions for PacMan configuration.
+
+Defines default constants and Pydantic models for level and game configuration.
+"""
+
 import logging
 from pydantic import BaseModel, Field, field_validator, ValidationInfo
 
@@ -28,12 +33,27 @@ DEFAULT_HEIGHT = 21
 
 
 class LevelConfig(BaseModel):
+    """Configuration for a single game level.
+
+    Attributes:
+        width: Level width in cells.
+        height: Level height in cells.
+    """
+
     width: int = Field(default=DEFAULT_WIDTH)
     height: int = Field(default=DEFAULT_HEIGHT)
 
     @field_validator("width", "height", mode="after")
     @classmethod
     def clamp_dimension(cls, value: int) -> int:
+        """Clamp maze dimensions to allowed limits.
+
+        Args:
+            value: Input dimension value.
+
+        Returns:
+            The clamped dimension value.
+        """
         if value < DEFAULT_MIN_MAZE_SIZE:
             logger.warning(f"Maze dimension '{value}' is too small. "
                            f"Clamped to {DEFAULT_MIN_MAZE_SIZE}.")
@@ -46,6 +66,20 @@ class LevelConfig(BaseModel):
 
 
 class Config(BaseModel):
+    """Game configuration model.
+
+    Attributes:
+        level: List of level configurations.
+        highscore_filename: High score file name.
+        lives: Number of player lives.
+        pacgum: Number of pacgum items.
+        points_per_pacgum: Points awarded per pacgum.
+        points_per_super_pacgum: Points awarded per super pacgum.
+        points_per_ghost: Points awarded per ghost.
+        seed: Random seed for level generation.
+        level_max_time: Maximum time for each level.
+    """
+
     level: list[LevelConfig] = Field(
         default_factory=lambda: [
             LevelConfig(width=DEFAULT_WIDTH, height=DEFAULT_HEIGHT)]
@@ -64,6 +98,14 @@ class Config(BaseModel):
     @field_validator("lives", mode="after")
     @classmethod
     def clamp_lives(cls, lives: int) -> int:
+        """Clamp the number of lives to a valid range.
+
+        Args:
+            lives: Requested number of lives.
+
+        Returns:
+            The validated number of lives.
+        """
         if lives < 1:
             logger.warning(f"Number of lives can't be inferior to 1. "
                            f"Clamped to {DEFAULT_LIVES}.")
@@ -79,6 +121,14 @@ class Config(BaseModel):
     @field_validator("pacgum", mode="after")
     @classmethod
     def clamp_pacgum(cls, pacgum: int) -> int:
+        """Clamp the number of pacgum items to valid limits.
+
+        Args:
+            pacgum: Requested pacgum count.
+
+        Returns:
+            The validated pacgum count.
+        """
         if pacgum < DEFAULT_MIN_PACGUM:
             logger.warning(f"Pacgum count {pacgum} is too low. "
                            f"Clamped to {DEFAULT_MIN_PACGUM}.")
@@ -98,6 +148,15 @@ class Config(BaseModel):
             )
     @classmethod
     def clamp_points(cls, points: int, info: ValidationInfo) -> int:
+        """Clamp point values to a valid range.
+
+        Args:
+            points: Requested points value.
+            info: Validation metadata.
+
+        Returns:
+            The validated point value.
+        """
         default_values = {
             "points_per_pacgum": DEFAULT_POINTS_PER_PACGUM,
             "points_per_super_pacgum": DEFAULT_POINTS_PER_SUPER_PACGUM,
@@ -115,6 +174,14 @@ class Config(BaseModel):
     @field_validator("level_max_time", mode="after")
     @classmethod
     def clamp_level_max_time(cls, level_max_time: int) -> int:
+        """Clamp the maximum level time to allowed limits.
+
+        Args:
+            level_max_time: Requested level time.
+
+        Returns:
+            The validated level time.
+        """
         if level_max_time < DEFAULT_MIN_TIME:
             logger.warning(f"Level_max_time {level_max_time} is too low. "
                            f"Clamped to {DEFAULT_MIN_TIME}.")
