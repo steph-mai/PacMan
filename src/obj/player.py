@@ -29,7 +29,7 @@ class Player:
         self.row: int = start_row
         self.col: int = start_col
         self.config: Config = config
-        self.scores: int = 0
+        self.score: int = 0
         self.lives: int = self.config.lives
         self.is_invincible: bool = False
         self.current_direction: int = 0
