@@ -46,11 +46,14 @@ class GameOverView(arcade.View):
             width=200,
             text="Enter Name"
         )
-        input_bg = arcade.gui.UIBorder(
-            child=self.name_input,
-            border_width=2,
-            border_color=arcade.color.WHITE
-        ).with_background(color=arcade.color.WHITE)
+        self.name_input = arcade.gui.UIInputText(
+            text_color=arcade.color.BLACK,
+            font_size=20,
+            width=200,
+            text="Enter Name"
+        )
+
+        input_bg = self.name_input.with_background(color=arcade.color.WHITE)
 
         self.v_box.add(input_bg)
 
