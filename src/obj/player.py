@@ -28,7 +28,7 @@ class Player:
         self.start_col: int = start_col
         self.row: int = start_row
         self.col: int = start_col
-        self.config = config
+        self.config: Config = config
         self.score: int = 0
         self.lives: int = self.config.lives
         self.is_invincible: bool = False

@@ -4,6 +4,7 @@ import logging
 import sys
 from ..obj.player import Player, NORTH, EAST, SOUTH, WEST
 from ..obj.level import Level
+from src.obj.ghost import Ghost
 from src.parsing.models import Config
 from mazegenerator import MazeGenerator
 
@@ -65,8 +66,9 @@ class GameView(arcade.View):
 
         self.pacgums: set[tuple[int, int]] = set()
         self.super_pacgums: set[tuple[int, int]] = set()
-
+        self.ghosts: list[Ghost] = []
         self.setup_collectibles()
+        self.setup_ghosts()
 
     def setup_collectibles(self) -> None:
         """
@@ -103,6 +105,22 @@ class GameView(arcade.View):
 
         for r, c in selected_cells:
             self.pacgums.add((r, c))
+
+    def setup_ghosts(self) -> None:
+        ghosts_data = [
+            (1, 0, arcade.color.RED),
+            (1, self.cols - 1, arcade.color.CYAN),
+            (self.rows - 2, 0, arcade.color.PINK),
+            (self.rows - 2, self.cols - 1, arcade.color.ORANGE)
+        ]
+
+        for r, c, color in ghosts_data:
+            ghost = Ghost(start_row=r,
+                          start_col=c,
+                          color=color,
+                          max_rows=self.rows,
+                          max_cols=self.cols)
+            self.ghosts.append(ghost)
 
     def on_update(self, delta_time: float) -> None:
         """
@@ -194,6 +212,9 @@ class GameView(arcade.View):
             arcade.draw_circle_filled(x, y, CELL_SIZE / 4, arcade.color.RED)
 
         self.player.draw(start_x_offset, start_y_offset, CELL_SIZE)
+
+        for ghost in self.ghosts:
+            ghost.draw(start_x_offset, start_y_offset, CELL_SIZE)
 
     def on_key_press(self, key: int, modifiers: int) -> None:
         """
