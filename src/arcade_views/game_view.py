@@ -7,6 +7,8 @@ from ..obj.level import Level
 from src.obj.ghost import Ghost
 from src.parsing.models import Config
 from mazegenerator import MazeGenerator
+from .game_over_view import GameOverView
+
 
 logger = logging.getLogger("pacman")
 CELL_SIZE = 32
@@ -70,6 +72,8 @@ class GameView(arcade.View):
         self.setup_collectibles()
         self.setup_ghosts()
 
+        self.is_game_over = False
+
     def setup_collectibles(self) -> None:
         """
         Populate the maze with pacgums and place super-pacgums
@@ -129,6 +133,9 @@ class GameView(arcade.View):
         Args:
             delta_time (float): Time elapsed since the last frame.
         """
+        if self.is_game_over:
+            return
+
         self.player.update_movement(delta_time, self.level.maze)
 
         current_pos = (self.player.row, self.player.col)
@@ -158,15 +165,16 @@ class GameView(arcade.View):
         or prints victory if the game is finished.
         """
         if self.level_index + 1 < len(self.config.level):
-            # Pass the existing player object to the next Level View
             next_view = GameView(self.config,
                                  self.level_index + 1,
                                  player=self.player)
             self.window.show_view(next_view)
         else:
-            # Game Completed
+
             print(f"Game Won! Final Score: {self.player.score}")
-            # self.window.show_view(VictoryView(self.player.score))
+            self.is_game_over = True
+
+            self.window.show_view(GameOverView(self.player.score))
 
     def on_draw(self) -> None:
         """
