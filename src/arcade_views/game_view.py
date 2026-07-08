@@ -111,7 +111,7 @@ class GameView(arcade.View):
             (1, 0, arcade.color.RED),
             (1, self.cols - 1, arcade.color.CYAN),
             (self.rows - 2, 0, arcade.color.PINK),
-            (self.rows - 2, self.cols - 1, arcade.color.PURPLE)
+            (self.rows - 2, self.cols - 1, arcade.color.ORANGE)
         ]
 
         for r, c, color in ghosts_data:
