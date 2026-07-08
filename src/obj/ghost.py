@@ -4,24 +4,23 @@ Contains the Ghost class and ghost-related state definitions.
 """
 
 import arcade
-from enum import Enum, auto
-from src.obj.player import Player
+from src.ai.states import GhostState, get_running_away_directions
+from src.ai.personalities import GhostPersonality, PERSONALITY_FUNCTION
 
 RESPAWN_DELAY: float = 10.0
-
-
-class GhostState(Enum):
-    """Enumeration of ghost behavior states."""
-
-    CHASING = auto()
-    RUNNING_AWAY = auto()
-    DEAD = auto()
+MOVE_DELAY: float = 0.25
 
 
 class Ghost:
     """Represent a ghost in the PacMan maze."""
 
-    def __init__(self, start_row: int, start_col: int, max_rows: int, max_cols: int, color: arcade.types.Color) -> None:
+    def __init__(self,
+                 start_row: int,
+                 start_col: int,
+                 max_rows: int,
+                 max_cols: int,
+                 color: arcade.types.Color,
+                 personality: GhostPersonality) -> None:
         """Initialize a ghost instance.
 
         Args:
@@ -38,24 +37,59 @@ class Ghost:
         self.max_rows: int = max_rows
         self.max_cols: int = max_cols
         self.state: GhostState = GhostState.CHASING
+        self.personality: GhostPersonality = personality
+        self.personal_behavior_function = PERSONALITY_FUNCTION[
+            self.personality]
         self.color = color
         self.death_timer: float = 0.0
         self.respawn_delay = RESPAWN_DELAY
+        self.move_timer: float = 0.0
+        self.move_delay: float = MOVE_DELAY
 
         self.current_direction = 0
         # au début le fantôme est immobile.
         # On ne bloque aucune direction
         # par le suite on l'empêche de faire 1/2 tour spontanément.
 
-    def move(self, player_row: int, player_col: int):
-        """Update the ghost position based on the player position.
+    def _choose_direction(
+            self,
+            maze: list[list[int]],
+            player_row: int,
+            player_col: int
+            ) -> int:
+        """
+        Update the ghost position based on the his state and then
+        on his personality.
 
         Args:
             player_row: Player row position.
             player_col: Player column position.
         """
-        pass
-        # TODO logique de déplacement
+        direction = 0
+
+        if self.state == GhostState.RUNNING_AWAY:
+            direction = get_running_away_directions(self, maze)
+
+        elif self.state == GhostState.DEAD:
+            direction = 0
+
+        elif self.state == GhostState.CHASING:
+            direction = self.personal_behavior_function(
+                self, maze, player_row, player_col)
+
+        if direction != 0:
+            self.current_direction = direction
+            self._apply_direction(direction)
+
+    def _apply_direction(self, direction: int):
+        if direction == 1:
+            self.row -= 1
+        if direction == 2:
+            self.col += 1
+        if direction == 4:
+            self.row += 1
+        if direction == 8:
+            self.col -= 1
 
     def update_movement(self,
                         delta_time: float,
@@ -76,7 +110,12 @@ class Ghost:
                 self.state = GhostState.CHASING
             return
 
-        self.move(player_row, player_col)
+        self.move_timer += delta_time
+        if self.move_timer < self.move_delay:
+            return
+        self.move_timer = 0.0
+
+        self._choose_direction(maze, player_row, player_col)
 
     def die(self) -> None:
         """Mark the ghost as dead and reset its position."""
@@ -84,6 +123,7 @@ class Ghost:
         self.death_timer = self.respawn_delay
         self.row = self.spawn_row
         self.col = self.spawn_col
+        self.current_direction = 0
 
     def draw(
             self,
