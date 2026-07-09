@@ -5,6 +5,7 @@ import sys
 from ..obj.player import Player, NORTH, EAST, SOUTH, WEST
 from ..obj.level import Level
 from src.obj.ghost import Ghost
+from src.ai.personalities import GhostPersonality
 from src.parsing.models import Config
 from mazegenerator import MazeGenerator
 
@@ -108,18 +109,20 @@ class GameView(arcade.View):
 
     def setup_ghosts(self) -> None:
         ghosts_data = [
-            (1, 0, arcade.color.RED),
-            (1, self.cols - 1, arcade.color.CYAN),
-            (self.rows - 2, 0, arcade.color.PINK),
-            (self.rows - 2, self.cols - 1, arcade.color.ORANGE)
+            (1, 0, arcade.color.RED, GhostPersonality.SHADOW),
+            (1, self.cols - 1, arcade.color.CYAN, GhostPersonality.BASHFUL),
+            (self.rows - 2, 0, arcade.color.PINK, GhostPersonality.SPEEDY),
+            (self.rows - 2, self.cols - 1,
+             arcade.color.ORANGE, GhostPersonality.POKEY)
         ]
 
-        for r, c, color in ghosts_data:
+        for r, c, color, personality in ghosts_data:
             ghost = Ghost(start_row=r,
                           start_col=c,
                           color=color,
                           max_rows=self.rows,
-                          max_cols=self.cols)
+                          max_cols=self.cols,
+                          personality=personality)
             self.ghosts.append(ghost)
 
     def on_update(self, delta_time: float) -> None:
