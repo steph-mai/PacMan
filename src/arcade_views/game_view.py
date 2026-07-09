@@ -2,10 +2,12 @@ import arcade
 import random
 import logging
 import sys
-from ..obj.player import Player, NORTH, EAST, SOUTH, WEST
+from ..obj.player import Player
+from ..obj.entity import NORTH, EAST, SOUTH, WEST
 from ..obj.level import Level
 from src.obj.ghost import Ghost
 from src.ai.personalities import GhostPersonality
+from src.ai.states import GhostState
 from src.parsing.models import Config
 from mazegenerator import MazeGenerator
 
@@ -173,7 +175,7 @@ class GameView(arcade.View):
 
     def on_draw(self) -> None:
         """
-        Render the maze walls and the player object.
+        Render the maze walls, the player object and the ghosts objects.
         """
         self.clear()
 
@@ -214,10 +216,34 @@ class GameView(arcade.View):
             y = start_y_offset - (r * CELL_SIZE) - (CELL_SIZE / 2)
             arcade.draw_circle_filled(x, y, CELL_SIZE / 4, arcade.color.RED)
 
-        self.player.draw(start_x_offset, start_y_offset, CELL_SIZE)
+        player_x = start_x_offset + (self.player.col * CELL_SIZE) + (CELL_SIZE / 2)
+        player_y = start_y_offset - (self.player.row * CELL_SIZE) - (CELL_SIZE / 2)
+
+        player_color = arcade.color.ORANGE if (
+            self.player.is_invincible) else arcade.color.YELLOW
+        arcade.draw_circle_filled(
+            player_x,
+            player_y,
+            CELL_SIZE / 3,
+            player_color)
 
         for ghost in self.ghosts:
-            ghost.draw(start_x_offset, start_y_offset, CELL_SIZE)
+            ghost_x = start_x_offset + (ghost.col * CELL_SIZE) + (CELL_SIZE / 2)
+            ghost_y = start_y_offset - (ghost.row * CELL_SIZE) - (CELL_SIZE / 2)
+
+            if ghost.state == GhostState.RUNNING_AWAY:
+                display_color = arcade.color.BLUE
+            elif ghost.state == GhostState.DEAD:
+                display_color = arcade.color.WHITE
+            else:
+                display_color = ghost.color
+
+            arcade.draw_circle_filled(
+                center_x=ghost_x,
+                center_y=ghost_y,
+                radius=CELL_SIZE / 2.5,
+                color=display_color
+            )
 
     def on_key_press(self, key: int, modifiers: int) -> None:
         """
