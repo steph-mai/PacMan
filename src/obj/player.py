@@ -1,14 +1,10 @@
-import arcade
 from src.parsing.models import Config
+from src.obj.entity import Entity
 
-NORTH = 1
-EAST = 2
-SOUTH = 4
-WEST = 8
 MOVE_DELAY = 0.21
 
 
-class Player:
+class Player(Entity):
     """
     Represents the PacMan player character.
 
@@ -24,18 +20,15 @@ class Player:
             start_row (int): Initial row index in the maze grid.
             start_col (int): Initial column index in the maze grid.
         """
-        self.start_row: int = start_row
-        self.start_col: int = start_col
+        super().__init__(start_row, start_col, MOVE_DELAY)
+
         self.row: int = start_row
         self.col: int = start_col
         self.config: Config = config
         self.score: int = 0
         self.lives: int = self.config.lives
         self.is_invincible: bool = False
-        self.current_direction: int = 0
         self.next_direction: int = 0
-        self.move_timer: float = 0.0
-        self.move_delay: float = MOVE_DELAY
 
     def queue_direction(self, direction: int) -> None:
         """
@@ -68,48 +61,11 @@ class Player:
                                                        current_walls):
             self.current_direction = self.next_direction
             self.next_direction = 0
-            self._apply_movement(self.current_direction)
+            self._apply_direction(self.current_direction)
 
         elif self.current_direction != 0 and self.\
                 _can_move(self.current_direction, current_walls):
-            self._apply_movement(self.current_direction)
-
-    def _can_move(self, direction: int, current_walls: int) -> bool:
-        """
-        Check if movement in a specific direction is blocked by a wall.
-
-        Args:
-            direction (int): The direction to check.
-            current_walls (int): The bitmask of walls in the current cell.
-
-        Returns:
-            bool: True if the path is clear, False otherwise.
-        """
-        if direction == NORTH and not (current_walls & NORTH):
-            return True
-        if direction == EAST and not (current_walls & EAST):
-            return True
-        if direction == SOUTH and not (current_walls & SOUTH):
-            return True
-        if direction == WEST and not (current_walls & WEST):
-            return True
-        return False
-
-    def _apply_movement(self, direction: int) -> None:
-        """
-        Apply the coordinate changes to the player's position.
-
-        Args:
-            direction (int): The validated direction to move.
-        """
-        if direction == NORTH:
-            self.row -= 1
-        elif direction == EAST:
-            self.col += 1
-        elif direction == SOUTH:
-            self.row += 1
-        elif direction == WEST:
-            self.col -= 1
+            self._apply_direction(self.current_direction)
 
     def lose_life(self) -> bool:
         """
@@ -167,27 +123,3 @@ class Player:
         Grant the player an extra life (Cheat Mode feature).
         """
         self.lives += 1
-
-    def draw(self, start_x_offset: float,
-             start_y_offset: float,
-             cell_size: int) -> None:
-        """
-        Render the player as a yellow circle on the screen.
-
-        Args:
-            start_x_offset (float): The X coordinate alignment for the grid.
-            start_y_offset (float): The Y coordinate alignment for the grid.
-            cell_size (int): The width/height of a single cell in pixels.
-        """
-        x_center = start_x_offset + (self.col * cell_size) + (cell_size / 2)
-        y_center = start_y_offset - (self.row * cell_size) - (cell_size / 2)
-
-        color = arcade.color.ORANGE if self.is_invincible \
-            else arcade.color.YELLOW
-
-        arcade.draw_circle_filled(
-            x_center,
-            y_center,
-            cell_size / 3,
-            color
-        )
