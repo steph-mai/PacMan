@@ -2,6 +2,7 @@ from src.parsing.models import Config
 from src.obj.entity import Entity
 
 MOVE_DELAY = 0.21
+SPEED_BOOST_MULTIPLIER = 1.8
 
 
 class Player(Entity):
@@ -28,6 +29,7 @@ class Player(Entity):
         self.score: int = 0
         self.lives: int = self.config.lives
         self.is_invincible: bool = False
+        self.speed_boost: bool = False
         self.next_direction: int = 0
 
     def queue_direction(self, direction: int) -> None:
@@ -51,7 +53,10 @@ class Player(Entity):
         """
         self.move_timer += delta_time
 
-        if self.move_timer < self.move_delay:
+        effective_delay = (self.move_delay / SPEED_BOOST_MULTIPLIER
+                           if self.speed_boost else self.move_delay)
+
+        if self.move_timer < effective_delay:
             return
 
         self.move_timer = 0.0
@@ -117,6 +122,12 @@ class Player(Entity):
         Toggle the invincibility cheat mode on or off.
         """
         self.is_invincible = not self.is_invincible
+
+    def toggle_speed_boost(self) -> None:
+        """
+        Toggle the speed boost cheat mode on or off.
+        """
+        self.speed_boost = not self.speed_boost
 
     def add_extra_life(self) -> None:
         """
