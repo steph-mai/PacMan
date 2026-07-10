@@ -77,6 +77,10 @@ class GameView(arcade.View):
 
         self.is_game_over = False
 
+        # --- Cheat mode (peer review) ---
+        self.cheat_mode_enabled: bool = False
+        self.ghosts_frozen: bool = False
+
     def setup_collectibles(self) -> None:
         """
         Populate the maze with pacgums and place super-pacgums
@@ -148,9 +152,11 @@ class GameView(arcade.View):
 
         self.player.update_movement(delta_time, self.level.maze)
 
-        for ghost in self.ghosts:
-            ghost.update_movement(
-                delta_time, self.level.maze, self.player.row, self.player.col)
+        if not self.ghosts_frozen:
+            for ghost in self.ghosts:
+                ghost.update_movement(
+                    delta_time, self.level.maze,
+                    self.player.row, self.player.col)
 
         current_pos = (self.player.row, self.player.col)
 
@@ -167,7 +173,7 @@ class GameView(arcade.View):
             self.handle_level_complete()
             return
 
-        if self.check_ghost_collision():
+        if self.check_ghost_collision() and not self.player.is_invincible:
             is_dead = self.player.lose_life()
 
             if is_dead:
@@ -292,9 +298,49 @@ class GameView(arcade.View):
                 color=display_color
             )
 
+        self.draw_hud()
+
+    def draw_hud(self) -> None:
+        """
+        Render the score, lives, and cheat mode status overlay. This
+        makes it easy for a reviewer to confirm each cheat's effect
+        without checking the console.
+        """
+        arcade.draw_text(f"Score: {self.player.score}",
+                         10, self.window.height - 25,
+                         arcade.color.BLACK, 16)
+        arcade.draw_text(f"Lives: {self.player.lives}",
+                         10, self.window.height - 45,
+                         arcade.color.BLACK, 16)
+
+        if self.cheat_mode_enabled:
+            active_cheats = []
+            if self.player.is_invincible:
+                active_cheats.append("INVINCIBLE")
+            if self.ghosts_frozen:
+                active_cheats.append("GHOSTS FROZEN")
+            if self.player.speed_boost:
+                active_cheats.append("SPEED BOOST")
+
+            status_text = "CHEAT MODE: ON"
+            if active_cheats:
+                status_text += " | " + " | ".join(active_cheats)
+
+            arcade.draw_text(status_text, 10, self.window.height - 70,
+                             arcade.color.RED, 14, bold=True)
+
+            help_text = ("F1 Invincibility | F2 Skip Level | "
+                         "F3 Freeze Ghosts | F4 Extra Life | F5 Speed Boost")
+            arcade.draw_text(help_text, 10, 10,
+                             arcade.color.DARK_BLUE, 12)
+        else:
+            arcade.draw_text("Press C for Cheat Mode",
+                             10, 10, arcade.color.DARK_BLUE, 12)
+
     def on_key_press(self, key: int, modifiers: int) -> None:
         """
-        Queue the user's keyboard inputs for player movement.
+        Queue the user's keyboard inputs for player movement, and
+        handle cheat mode toggles.
         """
         if key in (arcade.key.UP, arcade.key.W):
             self.player.queue_direction(NORTH)
@@ -304,3 +350,40 @@ class GameView(arcade.View):
             self.player.queue_direction(SOUTH)
         elif key in (arcade.key.LEFT, arcade.key.A):
             self.player.queue_direction(WEST)
+        elif key == arcade.key.C:
+            self.cheat_mode_enabled = not self.cheat_mode_enabled
+            status = "ON" if self.cheat_mode_enabled else "OFF"
+            print(f"[CHEAT MODE] {status}")
+        elif self.cheat_mode_enabled:
+            self.handle_cheat_key(key)
+
+    def handle_cheat_key(self, key: int) -> None:
+        """
+        Apply the cheat corresponding to the pressed function key.
+        Only called while cheat mode is enabled.
+
+        Args:
+            key (int): The pressed key code.
+        """
+        if key == arcade.key.F1:
+            self.player.toggle_invincibility()
+            status = "ON" if self.player.is_invincible else "OFF"
+            print(f"[CHEAT] Invincibility: {status}")
+
+        elif key == arcade.key.F2:
+            print("[CHEAT] Skipping level")
+            self.handle_level_complete()
+
+        elif key == arcade.key.F3:
+            self.ghosts_frozen = not self.ghosts_frozen
+            status = "ON" if self.ghosts_frozen else "OFF"
+            print(f"[CHEAT] Ghosts frozen: {status}")
+
+        elif key == arcade.key.F4:
+            self.player.add_extra_life()
+            print(f"[CHEAT] Extra life added. Lives: {self.player.lives}")
+
+        elif key == arcade.key.F5:
+            self.player.toggle_speed_boost()
+            status = "ON" if self.player.speed_boost else "OFF"
+            print(f"[CHEAT] Speed boost: {status}")
