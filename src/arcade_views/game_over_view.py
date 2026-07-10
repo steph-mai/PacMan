@@ -1,6 +1,7 @@
 import arcade
 import arcade.gui
 from ..utils.highscore import HighScoreManager
+from src.parsing.models import Config
 
 
 class GameOverView(arcade.View):
@@ -9,25 +10,31 @@ class GameOverView(arcade.View):
     entering a name for highscores.
     """
 
-    def __init__(self, final_score: int) -> None:
+    def __init__(self, final_score: int,
+                 config: Config,
+                 victory: bool = False) -> None:
         """
-        Initialize the game over screen with the player's final score.
-
-        Args:
-            final_score (int): The score achieved during the game.
+        Initialize the game over screen with the player's
+        final score and config.
         """
         super().__init__()
         self.final_score: int = final_score
+        self.config: Config = config
+        self.victory: bool = victory
         self.manager = arcade.gui.UIManager()
-        self.manager.enable()
-
-        arcade.set_background_color(arcade.color.BLACK)
 
         self.v_box = arcade.gui.UIBoxLayout(space_between=20)
 
+        if self.victory:
+            title_text = "YOU WIN!"
+            title_color = arcade.color.GO_GREEN
+        else:
+            title_text = "GAME OVER"
+            title_color = arcade.color.RED
+
         game_over_label = arcade.gui.UILabel(
-            text="GAME OVER",
-            text_color=arcade.color.RED,
+            text=title_text,
+            text_color=title_color,
             font_size=40,
             bold=True
         )
@@ -41,20 +48,13 @@ class GameOverView(arcade.View):
         self.v_box.add(score_label)
 
         self.name_input = arcade.gui.UIInputText(
-            color=arcade.color.BLACK,
-            font_size=20,
-            width=200,
-            text="Enter Name"
-        )
-        self.name_input = arcade.gui.UIInputText(
             text_color=arcade.color.BLACK,
             font_size=20,
             width=200,
+            height=25,
             text="Enter Name"
         )
-
         input_bg = self.name_input.with_background(color=arcade.color.WHITE)
-
         self.v_box.add(input_bg)
 
         save_btn = arcade.gui.UIFlatButton(text="Save & Return to Menu",
@@ -65,30 +65,75 @@ class GameOverView(arcade.View):
         def on_click_save(event: arcade.gui.UIOnClickEvent) -> None:
             self.save_highscore_and_exit()
 
-        self.manager.add(
-            arcade.gui.UIAnchorLayout(
-                child=self.v_box,
-                anchor_x="center_x",
-                anchor_y="center_y"
-            )
+        self.score_manager = HighScoreManager()
+        scores_box = arcade.gui.UIBoxLayout(space_between=5)
+
+        scores_title = arcade.gui.UILabel(
+            text="TOP 10 SCORES",
+            text_color=arcade.color.YELLOW,
+            font_size=22,
+            bold=True
         )
+        scores_box.add(scores_title)
+
+        top_scores = self.score_manager.scores[:10]
+
+        if not top_scores:
+            empty_label = arcade.gui.UILabel(
+                text="No scores yet",
+                text_color=arcade.color.LIGHT_GRAY,
+                font_size=14
+            )
+            scores_box.add(empty_label)
+        else:
+            for rank, entry in enumerate(top_scores, start=1):
+                row_text = f"{rank:>2}. {entry['name']:<10} {entry['score']}"
+                row_label = arcade.gui.UILabel(
+                    text=row_text,
+                    text_color=arcade.color.WHITE,
+                    font_size=16
+                )
+                scores_box.add(row_label)
+
+        h_box = arcade.gui.UIBoxLayout(vertical=False, space_between=60)
+        h_box.add(self.v_box)
+        h_box.add(scores_box)
+
+        anchor = arcade.gui.UIAnchorLayout()
+        anchor.add(
+            child=h_box,
+            anchor_x="center_x",
+            anchor_y="center_y"
+        )
+        self.manager.add(anchor)
+
+    def on_show_view(self) -> None:
+        """
+        Handle view activation. Set the background color and
+        enable UI interactions.
+        """
+        arcade.set_background_color(arcade.color.GRAY)
+        self.on_resize(self.window.width, self.window.height)
+        self.manager.enable()
+
+    def on_resize(self, width: int, height: int) -> None:
+        super().on_resize(width, height)
+
+    def on_hide_view(self) -> None:
+        """
+        Disable interactions when the view is hidden to prevent ghost inputs.
+        """
+        self.manager.disable()
 
     def save_highscore_and_exit(self) -> None:
-        """
-        Process the inputted name, save the score,
-        and switch back to the main menu.
-        """
         player_name = self.name_input.text
-
-        score_manager = HighScoreManager()
-        score_manager.add_score(player_name, self.final_score)
+        self.score_manager.add_score(player_name, self.final_score)
 
         print(f"Score saved for {player_name}: {self.final_score}")
-
         self.manager.disable()
 
         from .menu import MenuView
-        menu_view = MenuView()
+        menu_view = MenuView(self.config)
         self.window.show_view(menu_view)
 
     def on_draw(self) -> None:
@@ -96,4 +141,5 @@ class GameOverView(arcade.View):
         Render the UI elements.
         """
         self.clear()
+        self.window.default_camera.use()
         self.manager.draw()
