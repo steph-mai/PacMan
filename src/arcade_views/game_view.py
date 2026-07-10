@@ -10,6 +10,8 @@ from src.ai.personalities import GhostPersonality
 from src.ai.states import GhostState
 from src.parsing.models import Config
 from mazegenerator import MazeGenerator
+from .game_over_view import GameOverView
+
 
 logger = logging.getLogger("pacman")
 CELL_SIZE = 32
@@ -72,6 +74,8 @@ class GameView(arcade.View):
         self.ghosts: list[Ghost] = []
         self.setup_collectibles()
         self.setup_ghosts()
+
+        self.is_game_over = False
 
     def setup_collectibles(self) -> None:
         """
@@ -139,6 +143,9 @@ class GameView(arcade.View):
         Args:
             delta_time (float): Time elapsed since the last frame.
         """
+        if self.is_game_over:
+            return
+
         self.player.update_movement(delta_time, self.level.maze)
 
         for ghost in self.ghosts:
@@ -158,13 +165,37 @@ class GameView(arcade.View):
 
         if not self.pacgums and not self.super_pacgums:
             self.handle_level_complete()
+            return
 
-        # Placeholder for Ghost Collision
-        # if self.check_ghost_collision():
-        #     is_dead = self.player.lose_life()
-        #     if is_dead:
-        #         print("Game Over!")
-        #         # Trigger Game Over View
+        if self.check_ghost_collision():
+            is_dead = self.player.lose_life()
+
+            if is_dead:
+                print(f"Game Over! Final Score: {self.player.score}")
+                self.is_game_over = True
+                self.window.show_view(GameOverView(self.player.score,
+                                                   self.config,
+                                                   victory=False))
+            else:
+                self.player.reset_position()
+
+                for ghost in self.ghosts:
+                    ghost.reset_position()
+                    ghost.state = GhostState.CHASING
+
+    def check_ghost_collision(self) -> bool:
+        """
+        Check if the player occupies the same grid cell as any active ghost.
+
+        Returns:
+            bool: True if a collision is detected, False otherwise.
+        """
+        for ghost in self.ghosts:
+            if ghost.state != GhostState.DEAD:
+                if ghost.row == self.player.row and\
+                        ghost.col == self.player.col:
+                    return True
+        return False
 
     def handle_level_complete(self) -> None:
         """
@@ -172,15 +203,18 @@ class GameView(arcade.View):
         or prints victory if the game is finished.
         """
         if self.level_index + 1 < len(self.config.level):
-            # Pass the existing player object to the next Level View
             next_view = GameView(self.config,
                                  self.level_index + 1,
                                  player=self.player)
             self.window.show_view(next_view)
         else:
-            # Game Completed
+
             print(f"Game Won! Final Score: {self.player.score}")
-            # self.window.show_view(VictoryView(self.player.score))
+            self.is_game_over = True
+
+            self.window.show_view(GameOverView(self.player.score,
+                                               self.config,
+                                               victory=True))
 
     def on_draw(self) -> None:
         """
@@ -225,8 +259,10 @@ class GameView(arcade.View):
             y = start_y_offset - (r * CELL_SIZE) - (CELL_SIZE / 2)
             arcade.draw_circle_filled(x, y, CELL_SIZE / 4, arcade.color.RED)
 
-        player_x = start_x_offset + (self.player.col * CELL_SIZE) + (CELL_SIZE / 2)
-        player_y = start_y_offset - (self.player.row * CELL_SIZE) - (CELL_SIZE / 2)
+        player_x = start_x_offset + (self.player.col *
+                                     CELL_SIZE) + (CELL_SIZE / 2)
+        player_y = start_y_offset - (self.player.row *
+                                     CELL_SIZE) - (CELL_SIZE / 2)
 
         player_color = arcade.color.ORANGE if (
             self.player.is_invincible) else arcade.color.YELLOW
@@ -237,8 +273,10 @@ class GameView(arcade.View):
             player_color)
 
         for ghost in self.ghosts:
-            ghost_x = start_x_offset + (ghost.col * CELL_SIZE) + (CELL_SIZE / 2)
-            ghost_y = start_y_offset - (ghost.row * CELL_SIZE) - (CELL_SIZE / 2)
+            ghost_x = start_x_offset + (ghost.col *
+                                        CELL_SIZE) + (CELL_SIZE / 2)
+            ghost_y = start_y_offset - (ghost.row *
+                                        CELL_SIZE) - (CELL_SIZE / 2)
 
             if ghost.state == GhostState.RUNNING_AWAY:
                 display_color = arcade.color.BLUE
