@@ -351,6 +351,10 @@ class GameView(arcade.View):
             self.player.queue_direction(WEST)
         elif key == arcade.key.C:
             self.cheat_mode_enabled = not self.cheat_mode_enabled
+            if not self.cheat_mode_enabled:
+                self.player.is_invincible = False
+                self. ghosts_frozen = False
+                self.player.speed_boost = False
             status = "ON" if self.cheat_mode_enabled else "OFF"
             print(f"[CHEAT MODE] {status}")
         elif self.cheat_mode_enabled:
