@@ -120,7 +120,7 @@ class GameView(arcade.View):
             # (self.rows - 2, 0, arcade.color.PINK, GhostPersonality.SPEEDY),
             # (self.rows - 2, self.cols - 1,
             #  arcade.color.ORANGE, GhostPersonality.POKEY)
-            (1, 0, arcade.color.RED, GhostPersonality.RANDOM),
+            (1, 0, arcade.color.RED, GhostPersonality.SHADOW),
             (1, self.cols - 1, arcade.color.CYAN, GhostPersonality.RANDOM),
             (self.rows - 2, 0, arcade.color.PINK, GhostPersonality.RANDOM),
             (self.rows - 2, self.cols - 1,
