@@ -77,7 +77,6 @@ class GameView(arcade.View):
 
         self.is_game_over = False
 
-        # --- Cheat mode (peer review) ---
         self.cheat_mode_enabled: bool = False
         self.ghosts_frozen: bool = False
 
