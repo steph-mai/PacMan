@@ -2,9 +2,9 @@ import arcade
 import random
 import logging
 import sys
-from ..obj.player import Player
-from ..obj.entity import NORTH, EAST, SOUTH, WEST
-from ..obj.level import Level
+from src.obj.player import Player
+from src.obj.entity import NORTH, EAST, SOUTH, WEST
+from src.obj.level import Level
 from src.obj.ghost import Ghost
 from src.ai.personalities import GhostPersonality
 from src.ai.states import GhostState
@@ -111,11 +111,16 @@ class GameView(arcade.View):
 
     def setup_ghosts(self) -> None:
         ghosts_data = [
-            (1, 0, arcade.color.RED, GhostPersonality.SHADOW),
-            (1, self.cols - 1, arcade.color.CYAN, GhostPersonality.BASHFUL),
-            (self.rows - 2, 0, arcade.color.PINK, GhostPersonality.SPEEDY),
+            # (1, 0, arcade.color.RED, GhostPersonality.SHADOW),
+            # (1, self.cols - 1, arcade.color.CYAN, GhostPersonality.BASHFUL),
+            # (self.rows - 2, 0, arcade.color.PINK, GhostPersonality.SPEEDY),
+            # (self.rows - 2, self.cols - 1,
+            #  arcade.color.ORANGE, GhostPersonality.POKEY)
+            (1, 0, arcade.color.RED, GhostPersonality.RANDOM),
+            (1, self.cols - 1, arcade.color.CYAN, GhostPersonality.RANDOM),
+            (self.rows - 2, 0, arcade.color.PINK, GhostPersonality.RANDOM),
             (self.rows - 2, self.cols - 1,
-             arcade.color.ORANGE, GhostPersonality.POKEY)
+             arcade.color.ORANGE, GhostPersonality.RANDOM)
         ]
 
         for r, c, color, personality in ghosts_data:
@@ -135,6 +140,10 @@ class GameView(arcade.View):
             delta_time (float): Time elapsed since the last frame.
         """
         self.player.update_movement(delta_time, self.level.maze)
+
+        for ghost in self.ghosts:
+            ghost.update_movement(
+                delta_time, self.level.maze, self.player.row, self.player.col)
 
         current_pos = (self.player.row, self.player.col)
 
