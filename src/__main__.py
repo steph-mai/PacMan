@@ -13,7 +13,10 @@ def main() -> None:
     try:
         setup_logger()
         loader = Loader()
-        config_file = sys.argv[1] if len(sys.argv) == 2 else "config.json"
+        if len(sys.argv) != 2:
+            print("Usage: python3 pac-man.py <config_file.json>")
+            sys.exit(1)
+        config_file = sys.argv[1]
         config = loader.config_file_load(config_file)
         window = arcade.Window(1280, 720,
                                "PacMan",
