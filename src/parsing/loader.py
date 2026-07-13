@@ -36,8 +36,7 @@ class Loader:
 
         if (
             not path.exists() or
-            not path.is_file() or
-            path.suffix.lower() != ".json"
+            not path.is_file()
         ):
             logger.warning(f"Invalid or missing file '{file_name}'. "
                            f"Loading safe defaults.")

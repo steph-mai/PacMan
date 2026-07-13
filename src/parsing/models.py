@@ -4,7 +4,8 @@ Defines default constants and Pydantic models for level and game configuration.
 """
 
 import logging
-from pydantic import BaseModel, Field, field_validator, ValidationInfo
+from typing import Any
+from pydantic import BaseModel, Field, field_validator, ValidationInfo, model_validator
 
 logger = logging.getLogger("pacman")
 
@@ -39,9 +40,26 @@ class LevelConfig(BaseModel):
         width: Level width in cells.
         height: Level height in cells.
     """
-
     width: int = Field(default=DEFAULT_WIDTH)
     height: int = Field(default=DEFAULT_HEIGHT)
+
+    @model_validator(mode="before")
+    @classmethod
+    def pre_validate_level_types(cls, data: Any) -> Any:
+        if not isinstance(data, dict):
+            return data
+
+        dimensions = {"width": DEFAULT_WIDTH, "height": DEFAULT_HEIGHT}
+        for field, default_val in dimensions.items():
+            if field not in data:
+                logger.warning(f"Level field '{field}' is missing. Clamped to {default_val}.")
+                data[field] = default_val
+            else:
+                val = data[field]
+                if type(val) is not int or isinstance(val, bool):
+                    logger.warning(f"Level field '{field}' has invalid type ({type(val).__name__}). Expected int. Clamped to {default_val}.")
+                    data[field] = default_val
+        return data
 
     @field_validator("width", "height", mode="after")
     @classmethod
@@ -65,6 +83,14 @@ class LevelConfig(BaseModel):
         return value
 
 
+def get_default_level() -> list[LevelConfig]:
+    """Provide default level config and log a warning when field is missing."""
+    logger.warning(f"Field 'level' is totally missing from config. "
+                   f"Clamped to default value: "
+                   f"{DEFAULT_WIDTH} * {DEFAULT_HEIGHT}")
+    return [LevelConfig(width=DEFAULT_WIDTH, height=DEFAULT_HEIGHT)]
+
+
 class Config(BaseModel):
     """Game configuration model.
 
@@ -80,10 +106,7 @@ class Config(BaseModel):
         level_max_time: Maximum time for each level.
     """
 
-    level: list[LevelConfig] = Field(
-        default_factory=lambda: [
-            LevelConfig(width=DEFAULT_WIDTH, height=DEFAULT_HEIGHT)]
-    )
+    level: list[LevelConfig] = Field(default_factory=get_default_level)
     highscore_filename: str = Field(default=DEFAULT_HIGH_SCORES_FILE_NAME)
     lives: int = Field(default=DEFAULT_LIVES)
     pacgum: int = Field(default=DEFAULT_PACGUM)
@@ -94,6 +117,55 @@ class Config(BaseModel):
     points_per_ghost: int = Field(default=DEFAULT_POINTS_PER_GHOST)
     seed: int = Field(default=DEFAULT_SEED)
     level_max_time: int = Field(default=DEFAULT_TIME)
+
+    @model_validator(mode="before")
+    @classmethod
+    def pre_validate_types_and_missing(cls, data: Any) -> Any:
+        """
+        Intercepts the raw JSON to verify the existence of fields and
+        their strict types before Pydantic gets involved.
+        """
+        if not isinstance(data, dict):
+            return data
+        int_fields = {
+            "lives": DEFAULT_LIVES,
+            "pacgum": DEFAULT_PACGUM,
+            "points_per_pacgum": DEFAULT_POINTS_PER_PACGUM,
+            "points_per_super_pacgum": DEFAULT_POINTS_PER_SUPER_PACGUM,
+            "points_per_ghost": DEFAULT_POINTS_PER_GHOST,
+            "seed": DEFAULT_SEED,
+            "level_max_time": DEFAULT_TIME
+        }
+
+        for field, default_val in int_fields.items():
+            if field not in data:
+                logger.warning(f"Field '{field}' is missing. "
+                               f"Clamped to default value: {default_val}")
+                data[field] = default_val
+            else:
+                val = data[field]
+                if type(val) is not int or isinstance(val, bool):
+                    logger.warning(
+                        f"Field '{field}' has invalid type "
+                        f"({type(val).__name__}). "
+                        f"Expected int. Clamped to default value: "
+                        f"{default_val}"
+                    )
+                    data[field] = default_val
+
+        if "highscore_filename" not in data:
+            logger.warning(f"Field 'highscore_filename' is missing. "
+                           f"Clamped to default value: "
+                           f"{DEFAULT_HIGH_SCORES_FILE_NAME}")
+            data["highscore_filename"] = DEFAULT_HIGH_SCORES_FILE_NAME
+        elif not isinstance(data["highscore_filename"], str):
+            logger.warning(f"Field 'highscore_filename' has invalid type "
+                           f"({type(data['highscore_filename']).__name__}). "
+                           f"Expected str. Clamped to default value: "
+                           f"{DEFAULT_HIGH_SCORES_FILE_NAME}")
+            data["highscore_filename"] = DEFAULT_HIGH_SCORES_FILE_NAME
+
+        return data
 
     @field_validator("lives", mode="after")
     @classmethod
@@ -193,3 +265,32 @@ class Config(BaseModel):
             return DEFAULT_MAX_TIME
 
         return level_max_time
+
+    @field_validator("level", mode="before")
+    @classmethod
+    def get_validate_level_value(cls, value: Any) -> list:
+        """
+        Validate the level values.
+        Get the level default values if the field "level" is empty,
+        null, or invalid.
+        """
+        if not value or not isinstance(value, list):
+            logger.warning(f"Invalid value for level field: {value}. "
+                           f"Clamped to default value: "
+                           f"{DEFAULT_WIDTH} * {DEFAULT_HEIGHT}")
+            return [{"width": DEFAULT_WIDTH, "height": DEFAULT_HEIGHT}]
+
+        valid_levels = []
+        for item in value:
+            if isinstance(item, dict):
+                valid_levels.append(item)
+            else:
+                logger.warning(f"Ignored invalid level item (expected dict, got {type(item).__name__}): {item}")
+
+        if not valid_levels:
+            logger.warning("No valid levels found in the list. "
+                           f"Clamped to default value: "
+                           f"{DEFAULT_WIDTH} * {DEFAULT_HEIGHT}")
+            return [{"width": DEFAULT_WIDTH, "height": DEFAULT_HEIGHT}]
+
+        return valid_levels

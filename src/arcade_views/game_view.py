@@ -108,8 +108,16 @@ class GameView(arcade.View):
                 if not is_corner and not is_player_start and not is_solid_wall:
                     available_cells.append((r, c))
 
-        actual_pacgum_count = min(config_pacgum_count,
-                                  int(len(available_cells) * 0.80))
+        max_allowed_pacgums = int(len(available_cells) * 0.80)
+
+        if config_pacgum_count > max_allowed_pacgums:
+            logger.warning(
+                f"Requested pacgum count ({config_pacgum_count}) exceeds 80% "
+                f"of available maze cells. Clamped to dynamic maximum: "
+                f"{max_allowed_pacgums}."
+            )
+
+        actual_pacgum_count = min(config_pacgum_count, max_allowed_pacgums)
 
         selected_cells = random.sample(available_cells, actual_pacgum_count)
 
@@ -123,7 +131,7 @@ class GameView(arcade.View):
             # (self.rows - 2, 0, arcade.color.PINK, GhostPersonality.SPEEDY),
             # (self.rows - 2, self.cols - 1,
             #  arcade.color.ORANGE, GhostPersonality.POKEY)
-            (1, 0, arcade.color.RED, GhostPersonality.RANDOM),
+            (1, 0, arcade.color.RED, GhostPersonality.SHADOW),
             (1, self.cols - 1, arcade.color.CYAN, GhostPersonality.RANDOM),
             (self.rows - 2, 0, arcade.color.PINK, GhostPersonality.RANDOM),
             (self.rows - 2, self.cols - 1,
@@ -351,6 +359,10 @@ class GameView(arcade.View):
             self.player.queue_direction(WEST)
         elif key == arcade.key.C:
             self.cheat_mode_enabled = not self.cheat_mode_enabled
+            if not self.cheat_mode_enabled:
+                self.player.is_invincible = False
+                self. ghosts_frozen = False
+                self.player.speed_boost = False
             status = "ON" if self.cheat_mode_enabled else "OFF"
             print(f"[CHEAT MODE] {status}")
         elif self.cheat_mode_enabled:
