@@ -131,10 +131,10 @@ class GameView(arcade.View):
             # (self.rows - 2, 0, arcade.color.PINK, GhostPersonality.SPEEDY),
             # (self.rows - 2, self.cols - 1,
             #  arcade.color.ORANGE, GhostPersonality.POKEY)
-            (1, 0, arcade.color.RED, GhostPersonality.SHADOW),
-            (1, self.cols - 1, arcade.color.CYAN, GhostPersonality.RANDOM),
-            (self.rows - 2, 0, arcade.color.PINK, GhostPersonality.RANDOM),
-            (self.rows - 2, self.cols - 1,
+            (0, 0, arcade.color.RED, GhostPersonality.SHADOW),
+            (0, self.cols - 1, arcade.color.CYAN, GhostPersonality.RANDOM),
+            (self.rows - 1, 0, arcade.color.PINK, GhostPersonality.SPEEDY),
+            (self.rows - 1, self.cols - 1,
              arcade.color.ORANGE, GhostPersonality.RANDOM)
         ]
 
@@ -163,7 +163,7 @@ class GameView(arcade.View):
             for ghost in self.ghosts:
                 ghost.update_movement(
                     delta_time, self.level.maze,
-                    self.player.row, self.player.col)
+                    self.player)
 
         current_pos = (self.player.row, self.player.col)
 

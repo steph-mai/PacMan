@@ -3,6 +3,7 @@
 Contains the Ghost class and ghost-related state definitions.
 """
 from src.obj.entity import Entity
+from src.obj.player import Player
 from src.ai.states import GhostState, get_running_away_directions
 from src.ai.personalities import GhostPersonality, PERSONALITY_FUNCTION
 
@@ -47,8 +48,7 @@ class Ghost(Entity):
     def _choose_direction(
             self,
             maze: list[list[int]],
-            player_row: int,
-            player_col: int
+            player: Player
             ) -> int:
         """
         Update the ghost position based on the his state and then
@@ -68,7 +68,7 @@ class Ghost(Entity):
 
         elif self.state == GhostState.CHASING:
             direction = self.personal_behavior_function(
-                self, maze, player_row, player_col)
+                self, maze, player)
 
         if direction != 0:
             self.current_direction = direction
@@ -77,8 +77,7 @@ class Ghost(Entity):
     def update_movement(self,
                         delta_time: float,
                         maze: list[list[int]],
-                        player_row: int,
-                        player_col: int) -> None:
+                        player: Player) -> None:
         """Update ghost movement and state each frame.
 
         Args:
@@ -98,7 +97,7 @@ class Ghost(Entity):
             return
         self.move_timer = 0.0
 
-        self._choose_direction(maze, player_row, player_col)
+        self._choose_direction(maze, player)
 
     def die(self) -> None:
         """Mark the ghost as dead and reset its position."""
