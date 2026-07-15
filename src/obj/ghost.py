@@ -5,7 +5,6 @@ Contains the Ghost class and ghost-related state definitions.
 from src.obj.entity import Entity
 from src.obj.player import Player
 from src.ai.states import GhostState, get_running_away_directions
-from src.ai.personalities import GhostPersonality, PERSONALITY_FUNCTION
 
 RESPAWN_DELAY: float = 10.0
 MOVE_DELAY: float = 0.25
@@ -14,50 +13,38 @@ RGBcolor = tuple[int, int, int]
 
 
 class Ghost(Entity):
-    """Represent a ghost in the PacMan maze."""
+    """Represent a ghost in the PacMan maze. (Base class)"""
 
     def __init__(self,
                  start_row: int,
                  start_col: int,
                  max_rows: int,
                  max_cols: int,
-                 color: RGBcolor,
-                 personality: GhostPersonality) -> None:
-        """Initialize a ghost instance.
+                 color: RGBcolor
+                 ) -> None:
 
-        Args:
-            start_row: Initial row position in the maze.
-            start_col: Initial column position in the maze.
-            max_rows: Number of rows in the maze.
-            max_cols: Number of columns in the maze.
-            color: Ghost display color.
-        """
         super().__init__(start_row, start_col, MOVE_DELAY)
-        self.spawn_row: int = start_row  # TODO vérifier l utilité
+        self.spawn_row: int = start_row
         self.spawn_col: int = start_col
         self.max_rows: int = max_rows
         self.max_cols: int = max_cols
         self.state: GhostState = GhostState.CHASING
-        self.personality: GhostPersonality = personality
-        self.personal_behavior_function = PERSONALITY_FUNCTION[
-            self.personality]
         self.color = color
         self.death_timer: float = 0.0
         self.respawn_delay = RESPAWN_DELAY
+
+    def get_next_direction(self, maze: list[list[int]], player: Player) -> int:
+        """
+        To be overridden by child classes (ShadowGhost, SpeedyGhost, etc.)
+        """
+        return 0
 
     def _choose_direction(
             self,
             maze: list[list[int]],
             player: Player
-            ) -> int:
-        """
-        Update the ghost position based on the his state and then
-        on his personality.
+            ) -> None:
 
-        Args:
-            player_row: Player row position.
-            player_col: Player column position.
-        """
         direction = 0
 
         if self.state == GhostState.RUNNING_AWAY:
@@ -67,8 +54,7 @@ class Ghost(Entity):
             direction = 0
 
         elif self.state == GhostState.CHASING:
-            direction = self.personal_behavior_function(
-                self, maze, player)
+            direction = self.get_next_direction(maze, player)
 
         if direction != 0:
             self.current_direction = direction
@@ -78,14 +64,7 @@ class Ghost(Entity):
                         delta_time: float,
                         maze: list[list[int]],
                         player: Player) -> None:
-        """Update ghost movement and state each frame.
 
-        Args:
-            delta_time: Elapsed time since last update.
-            maze: Maze layout as a 2D list.
-            player_row: Player row position.
-            player_col: Player column position.
-        """
         if self.state == GhostState.DEAD:
             self.death_timer -= delta_time
             if self.death_timer <= 0:

@@ -6,7 +6,7 @@ from src.obj.player import Player
 from src.obj.entity import NORTH, EAST, SOUTH, WEST
 from src.obj.level import Level
 from src.obj.ghost import Ghost
-from src.ai.personalities import GhostPersonality
+from src.ai.personalities import SpeedyGhost, RandomGhost, ShadowGhost
 from src.ai.states import GhostState
 from src.parsing.models import Config
 from mazegenerator import MazeGenerator
@@ -125,27 +125,39 @@ class GameView(arcade.View):
             self.pacgums.add((r, c))
 
     def setup_ghosts(self) -> None:
-        ghosts_data = [
-            # (1, 0, arcade.color.RED, GhostPersonality.SHADOW),
-            # (1, self.cols - 1, arcade.color.CYAN, GhostPersonality.BASHFUL),
-            # (self.rows - 2, 0, arcade.color.PINK, GhostPersonality.SPEEDY),
-            # (self.rows - 2, self.cols - 1,
-            #  arcade.color.ORANGE, GhostPersonality.POKEY)
-            (0, 0, arcade.color.RED, GhostPersonality.SHADOW),
-            (0, self.cols - 1, arcade.color.CYAN, GhostPersonality.RANDOM),
-            (self.rows - 1, 0, arcade.color.PINK, GhostPersonality.SPEEDY),
-            (self.rows - 1, self.cols - 1,
-             arcade.color.ORANGE, GhostPersonality.RANDOM)
-        ]
+        blinky = ShadowGhost(
+            start_row=0,
+            start_col=0,
+            max_rows=self.rows,
+            max_cols=self.cols,
+            color=arcade.color.RED
+        )
 
-        for r, c, color, personality in ghosts_data:
-            ghost = Ghost(start_row=r,
-                          start_col=c,
-                          color=color,
-                          max_rows=self.rows,
-                          max_cols=self.cols,
-                          personality=personality)
-            self.ghosts.append(ghost)
+        inky = RandomGhost(
+            start_row=0,
+            start_col=self.cols - 1,
+            max_rows=self.rows,
+            max_cols=self.cols,
+            color=arcade.color.CYAN
+        )
+
+        pinky = SpeedyGhost(
+            start_row=self.rows - 1,
+            start_col=0,
+            max_rows=self.rows,
+            max_cols=self.cols,
+            color=arcade.color.PINK
+        )
+
+        clyde = RandomGhost(
+            start_row=self.rows - 1,
+            start_col=self.cols - 1,
+            max_rows=self.rows,
+            max_cols=self.cols,
+            color=arcade.color.ORANGE
+        )
+
+        self.ghosts = [blinky, inky, pinky, clyde]
 
     def on_update(self, delta_time: float) -> None:
         """
@@ -175,6 +187,9 @@ class GameView(arcade.View):
             self.super_pacgums.remove(current_pos)
             self.player.add_score(self.config.points_per_super_pacgum)
             # TODO: Make ghosts edible here
+            for ghost in self.ghosts:
+                if ghost.state != GhostState.DEAD:
+                    ghost.state = GhostState.RUNNING_AWAY
 
         if not self.pacgums and not self.super_pacgums:
             self.handle_level_complete()
