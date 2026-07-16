@@ -6,7 +6,7 @@ from src.obj.player import Player
 from src.obj.entity import NORTH, EAST, SOUTH, WEST
 from src.obj.level import Level
 from src.obj.ghost import Ghost
-from src.ai.personalities import GhostPersonality
+from src.ai.behaviors import SpeedyGhost, ShadowGhost, BashfulGhost, PokeyGhost
 from src.ai.states import GhostState
 from src.parsing.models import Config
 from mazegenerator import MazeGenerator
@@ -125,27 +125,39 @@ class GameView(arcade.View):
             self.pacgums.add((r, c))
 
     def setup_ghosts(self) -> None:
-        ghosts_data = [
-            # (1, 0, arcade.color.RED, GhostPersonality.SHADOW),
-            # (1, self.cols - 1, arcade.color.CYAN, GhostPersonality.BASHFUL),
-            # (self.rows - 2, 0, arcade.color.PINK, GhostPersonality.SPEEDY),
-            # (self.rows - 2, self.cols - 1,
-            #  arcade.color.ORANGE, GhostPersonality.POKEY)
-            (1, 0, arcade.color.RED, GhostPersonality.SHADOW),
-            (1, self.cols - 1, arcade.color.CYAN, GhostPersonality.RANDOM),
-            (self.rows - 2, 0, arcade.color.PINK, GhostPersonality.RANDOM),
-            (self.rows - 2, self.cols - 1,
-             arcade.color.ORANGE, GhostPersonality.RANDOM)
-        ]
+        blinky = ShadowGhost(
+            start_row=0,
+            start_col=0,
+            max_rows=self.rows,
+            max_cols=self.cols,
+            color=arcade.color.RED
+        )
 
-        for r, c, color, personality in ghosts_data:
-            ghost = Ghost(start_row=r,
-                          start_col=c,
-                          color=color,
-                          max_rows=self.rows,
-                          max_cols=self.cols,
-                          personality=personality)
-            self.ghosts.append(ghost)
+        inky = BashfulGhost(
+            start_row=0,
+            start_col=self.cols - 1,
+            max_rows=self.rows,
+            max_cols=self.cols,
+            color=arcade.color.CYAN
+        )
+
+        pinky = SpeedyGhost(
+            start_row=self.rows - 1,
+            start_col=0,
+            max_rows=self.rows,
+            max_cols=self.cols,
+            color=arcade.color.PINK
+        )
+
+        clyde = PokeyGhost(
+            start_row=self.rows - 1,
+            start_col=self.cols - 1,
+            max_rows=self.rows,
+            max_cols=self.cols,
+            color=arcade.color.ORANGE
+        )
+
+        self.ghosts = [blinky, inky, pinky, clyde]
 
     def on_update(self, delta_time: float) -> None:
         """
@@ -163,7 +175,7 @@ class GameView(arcade.View):
             for ghost in self.ghosts:
                 ghost.update_movement(
                     delta_time, self.level.maze,
-                    self.player.row, self.player.col)
+                    self.player)
 
         current_pos = (self.player.row, self.player.col)
 
@@ -174,7 +186,12 @@ class GameView(arcade.View):
         if current_pos in self.super_pacgums:
             self.super_pacgums.remove(current_pos)
             self.player.add_score(self.config.points_per_super_pacgum)
-            # TODO: Make ghosts edible here
+
+            for ghost in self.ghosts:
+                if ghost.state != GhostState.DEAD:
+                    ghost.state = GhostState.RUNNING_AWAY
+                    ghost.scared_timer = ghost.scared_delay
+                    ghost.reverse_course()
 
         if not self.pacgums and not self.super_pacgums:
             self.handle_level_complete()
@@ -199,14 +216,21 @@ class GameView(arcade.View):
     def check_ghost_collision(self) -> bool:
         """
         Check if the player occupies the same grid cell as any active ghost.
+        Handles eating scared ghosts directly.
 
         Returns:
             bool: True if a collision is detected, False otherwise.
         """
         for ghost in self.ghosts:
-            if ghost.state != GhostState.DEAD:
-                if ghost.row == self.player.row and\
-                        ghost.col == self.player.col:
+            if ghost.row == self.player.row and\
+               ghost.col == self.player.col:
+                if ghost.state == GhostState.RUNNING_AWAY:
+                    ghost.die()
+                    self.player.add_score(self.config.points_per_ghost)
+                elif (
+                    ghost.state == GhostState.CHASING
+                    and not self.player.is_invincible
+                ):
                     return True
         return False
 
@@ -292,9 +316,15 @@ class GameView(arcade.View):
                                         CELL_SIZE) - (CELL_SIZE / 2)
 
             if ghost.state == GhostState.RUNNING_AWAY:
-                display_color = arcade.color.BLUE
+                if ghost.is_flashing():
+                    if int(ghost.scared_timer * 4) % 2 == 0:
+                        display_color = arcade.color.RED
+                    else:
+                        display_color = arcade.color.BLUE
+                else:
+                    display_color = arcade.color.BLUE
             elif ghost.state == GhostState.DEAD:
-                display_color = arcade.color.WHITE
+                display_color = arcade.color.BLACK
             else:
                 display_color = ghost.color
 

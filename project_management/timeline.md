@@ -17,11 +17,21 @@ A timeline shows tasks, key dates, and goals in order. It helps teams plan ahead
   <br>
 </div>
 
+
 **Focus on days 1-3**
 
 <div align="center">
 <br>
   <img src="project_management_assets/time_line_focus_days_2-4.png" alt="time_line1" width="1200" />
+
+  <br>
+</div>
+
+**Focus on days 4-9**
+
+<div align="center">
+<br>
+  <img src="project_management_assets/time_line_focus_8_to_16_july.png" alt="time_line1" width="1200" />
 
   <br>
 </div>

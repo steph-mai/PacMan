@@ -1,14 +1,20 @@
+"""Ghost state definitions for the Pac-Man game.
+
+This module provides the enumeration of all possible behavioral states
+a ghost can exhibit during gameplay.
+"""
 from enum import Enum, auto
-from typing import Any
 
 
 class GhostState(Enum):
-    """Enumeration of ghost behavior states."""
+    """Enumeration of ghost behavior states.
+
+    Attributes:
+        CHASING: The ghost actively hunts the player or patrols its zone.
+        RUNNING_AWAY: The ghost is frightened (blue) and moves randomly.
+        DEAD: The ghost has been eaten and is returning to its spawn point.
+    """
 
     CHASING = auto()
     RUNNING_AWAY = auto()
     DEAD = auto()
-
-
-def get_running_away_directions(ghost: Any, maze: list[list[int]]) -> int:
-    pass

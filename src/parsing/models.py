@@ -158,7 +158,10 @@ class Config(BaseModel):
                            f"Clamped to default value: "
                            f"{DEFAULT_HIGH_SCORES_FILE_NAME}")
             data["highscore_filename"] = DEFAULT_HIGH_SCORES_FILE_NAME
-        elif not isinstance(data["highscore_filename"], str):
+        elif (
+            not isinstance(data["highscore_filename"], str)
+            or not data["highscore_filename"].strip()
+        ):
             logger.warning(f"Field 'highscore_filename' has invalid type "
                            f"({type(data['highscore_filename']).__name__}). "
                            f"Expected str. Clamped to default value: "
