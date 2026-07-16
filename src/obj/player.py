@@ -23,8 +23,6 @@ class Player(Entity):
         """
         super().__init__(start_row, start_col, MOVE_DELAY)
 
-        self.row: int = start_row
-        self.col: int = start_col
         self.config: Config = config
         self.score: int = 0
         self.lives: int = self.config.lives
@@ -68,8 +66,10 @@ class Player(Entity):
             self.next_direction = 0
             self._apply_direction(self.current_direction)
 
-        elif self.current_direction != 0 and self.\
-                _can_move(self.current_direction, current_walls):
+        elif (
+            self.current_direction != 0
+            and self._can_move(self.current_direction, current_walls)
+        ):
             self._apply_direction(self.current_direction)
 
     def lose_life(self) -> bool:
@@ -85,14 +85,6 @@ class Player(Entity):
 
         self.lives -= 1
         return self.lives <= 0
-
-    def reset_position(self) -> None:
-        """
-        Reset the player's current coordinates back to their
-        designated starting position.
-        """
-        self.row = self.start_row
-        self.col = self.start_col
 
     def prepare_for_next_level(self, new_start_row: int,
                                new_start_col: int) -> None:

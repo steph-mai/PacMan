@@ -106,7 +106,7 @@ def _calculate_as_the_crow_flies_distance(
     return (row1 - row2)**2 + (col1 - col2)**2
 
 
-def get_direction_towards_target(
+def _get_direction_towards_target(
         ghost: Ghost, maze: list[list[int]],
         target_row: int, target_col: int
         ) -> int:
@@ -162,8 +162,10 @@ class ShadowGhost(Ghost):
     This ghost simply chases the player directly and uses the shortest
     straight-line path toward the player's current cell.
     """
-    def get_next_direction(self, maze: list[list[int]], player: Player) -> int:
-        return get_direction_towards_target(self, maze, player.row, player.col)
+    def _get_next_direction(
+            self, maze: list[list[int]], player: Player) -> int:
+        return _get_direction_towards_target(
+            self, maze, player.row, player.col)
 
 
 class SpeedyGhost(Ghost):
@@ -172,14 +174,16 @@ class SpeedyGhost(Ghost):
     This ghost predicts the player's movement and tries to intercept
     four cells in front of the player's current direction.
     """
-    def get_next_direction(self, maze: list[list[int]], player: Player) -> int:
+    def _get_next_direction(
+            self, maze: list[list[int]], player: Player) -> int:
         dir_row, dir_col = DIRECTIONS_VECTORS.get(
             player.current_direction, (0, 0))
 
         target_row = player.row + (4 * dir_row)
         target_col = player.col + (4 * dir_col)
 
-        return get_direction_towards_target(self, maze, target_row, target_col)
+        return _get_direction_towards_target(
+            self, maze, target_row, target_col)
 
 
 class BashfulGhost(Ghost):
@@ -188,14 +192,16 @@ class BashfulGhost(Ghost):
     This ghost aims for a point four cells behind the player's current
     direction, creating a more indirect pursuit path.
     """
-    def get_next_direction(self, maze: list[list[int]], player: Player) -> int:
+    def _get_next_direction(
+            self, maze: list[list[int]], player: Player) -> int:
         dir_row, dir_col = DIRECTIONS_VECTORS.get(
             player.current_direction, (0, 0))
 
         target_row = player.row - (4 * dir_row)
         target_col = player.col - (4 * dir_col)
 
-        return get_direction_towards_target(self, maze, target_row, target_col)
+        return _get_direction_towards_target(
+            self, maze, target_row, target_col)
 
 
 class PokeyGhost(Ghost):
@@ -205,11 +211,12 @@ class PokeyGhost(Ghost):
     this ghost chases the player. Otherwise, it behaves like a scared ghost
     and moves randomly.
     """
-    def get_next_direction(self, maze: list[list[int]], player: Player) -> int:
+    def _get_next_direction(
+            self, maze: list[list[int]], player: Player) -> int:
         distance_square_to_player = _calculate_as_the_crow_flies_distance(
             self.row, self.col, player.row, player.col)
         if distance_square_to_player > 25:
-            return get_direction_towards_target(
+            return _get_direction_towards_target(
                 self, maze, player.row, player.col)
         else:
             return get_running_away_directions(self, maze)

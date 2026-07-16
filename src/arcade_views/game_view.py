@@ -6,8 +6,7 @@ from src.obj.player import Player
 from src.obj.entity import NORTH, EAST, SOUTH, WEST
 from src.obj.level import Level
 from src.obj.ghost import Ghost
-from src.ai.behaviors import (
-    SpeedyGhost, ShadowGhost, BashfulGhost, PokeyGhost, get_reverse_direction)
+from src.ai.behaviors import SpeedyGhost, ShadowGhost, BashfulGhost, PokeyGhost
 from src.ai.states import GhostState
 from src.parsing.models import Config
 from mazegenerator import MazeGenerator
@@ -192,12 +191,7 @@ class GameView(arcade.View):
                 if ghost.state != GhostState.DEAD:
                     ghost.state = GhostState.RUNNING_AWAY
                     ghost.scared_timer = ghost.scared_delay
-
-                    reverse_dir = get_reverse_direction(
-                        ghost.current_direction)
-                    if reverse_dir != 0:
-                        ghost.current_direction = reverse_dir
-                        ghost._apply_direction(reverse_dir)
+                    ghost.reverse_course()
 
         if not self.pacgums and not self.super_pacgums:
             self.handle_level_complete()
@@ -233,7 +227,10 @@ class GameView(arcade.View):
                 if ghost.state == GhostState.RUNNING_AWAY:
                     ghost.die()
                     self.player.add_score(self.config.points_per_ghost)
-                elif ghost.state == GhostState.CHASING and not self.player.is_invincible:
+                elif (
+                    ghost.state == GhostState.CHASING
+                    and not self.player.is_invincible
+                ):
                     return True
         return False
 
