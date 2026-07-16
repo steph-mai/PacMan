@@ -4,10 +4,12 @@ Contains the Ghost class and ghost-related state definitions.
 """
 from src.obj.entity import Entity
 from src.obj.player import Player
-from src.ai.states import GhostState, get_running_away_directions
+from src.ai.states import GhostState
 
-RESPAWN_DELAY: float = 10.0
+RESPAWN_DELAY: float = 5.0
+SCARED_DELAY: float = 10.0
 MOVE_DELAY: float = 0.25
+FLASH_DELAY: float = 3.0
 
 RGBcolor = tuple[int, int, int]
 
@@ -31,6 +33,8 @@ class Ghost(Entity):
         self.state: GhostState = GhostState.CHASING
         self.color = color
         self.death_timer: float = 0.0
+        self.scared_timer: float = 0.0
+        self.scared_delay = SCARED_DELAY
         self.respawn_delay = RESPAWN_DELAY
 
     def get_next_direction(self, maze: list[list[int]], player: Player) -> int:
@@ -48,6 +52,7 @@ class Ghost(Entity):
         direction = 0
 
         if self.state == GhostState.RUNNING_AWAY:
+            from src.ai.behaviors import get_running_away_directions
             direction = get_running_away_directions(self, maze)
 
         elif self.state == GhostState.DEAD:
@@ -71,6 +76,11 @@ class Ghost(Entity):
                 self.state = GhostState.CHASING
             return
 
+        if self.state == GhostState.RUNNING_AWAY:
+            self.scared_timer -= delta_time
+            if self.scared_timer <= 0:
+                self.state = GhostState.CHASING
+
         self.move_timer += delta_time
         if self.move_timer < self.move_delay:
             return
@@ -83,3 +93,7 @@ class Ghost(Entity):
         self.state = GhostState.DEAD
         self.death_timer = self.respawn_delay
         self.reset_position()
+
+    def is_flashing(self) -> bool:
+        return self.state == GhostState.RUNNING_AWAY and self.scared_timer\
+            <= FLASH_DELAY

@@ -6,7 +6,8 @@ from src.obj.player import Player
 from src.obj.entity import NORTH, EAST, SOUTH, WEST
 from src.obj.level import Level
 from src.obj.ghost import Ghost
-from src.ai.personalities import SpeedyGhost, RandomGhost, ShadowGhost
+from src.ai.behaviors import (
+    SpeedyGhost, ShadowGhost, BashfulGhost, PokeyGhost, get_reverse_direction)
 from src.ai.states import GhostState
 from src.parsing.models import Config
 from mazegenerator import MazeGenerator
@@ -133,7 +134,7 @@ class GameView(arcade.View):
             color=arcade.color.RED
         )
 
-        inky = RandomGhost(
+        inky = BashfulGhost(
             start_row=0,
             start_col=self.cols - 1,
             max_rows=self.rows,
@@ -149,7 +150,7 @@ class GameView(arcade.View):
             color=arcade.color.PINK
         )
 
-        clyde = RandomGhost(
+        clyde = PokeyGhost(
             start_row=self.rows - 1,
             start_col=self.cols - 1,
             max_rows=self.rows,
@@ -186,10 +187,17 @@ class GameView(arcade.View):
         if current_pos in self.super_pacgums:
             self.super_pacgums.remove(current_pos)
             self.player.add_score(self.config.points_per_super_pacgum)
-            # TODO: Make ghosts edible here
+
             for ghost in self.ghosts:
                 if ghost.state != GhostState.DEAD:
                     ghost.state = GhostState.RUNNING_AWAY
+                    ghost.scared_timer = ghost.scared_delay
+
+                    reverse_dir = get_reverse_direction(
+                        ghost.current_direction)
+                    if reverse_dir != 0:
+                        ghost.current_direction = reverse_dir
+                        ghost._apply_direction(reverse_dir)
 
         if not self.pacgums and not self.super_pacgums:
             self.handle_level_complete()
@@ -214,14 +222,18 @@ class GameView(arcade.View):
     def check_ghost_collision(self) -> bool:
         """
         Check if the player occupies the same grid cell as any active ghost.
+        Handles eating scared ghosts directly.
 
         Returns:
             bool: True if a collision is detected, False otherwise.
         """
         for ghost in self.ghosts:
-            if ghost.state != GhostState.DEAD:
-                if ghost.row == self.player.row and\
-                        ghost.col == self.player.col:
+            if ghost.row == self.player.row and\
+               ghost.col == self.player.col:
+                if ghost.state == GhostState.RUNNING_AWAY:
+                    ghost.die()
+                    self.player.add_score(self.config.points_per_ghost)
+                elif ghost.state == GhostState.CHASING and not self.player.is_invincible:
                     return True
         return False
 
@@ -307,9 +319,15 @@ class GameView(arcade.View):
                                         CELL_SIZE) - (CELL_SIZE / 2)
 
             if ghost.state == GhostState.RUNNING_AWAY:
-                display_color = arcade.color.BLUE
+                if ghost.is_flashing():
+                    if int(ghost.scared_timer * 4) % 2 == 0:
+                        display_color = arcade.color.RED
+                    else:
+                        display_color = arcade.color.BLUE
+                else:
+                    display_color = arcade.color.BLUE
             elif ghost.state == GhostState.DEAD:
-                display_color = arcade.color.WHITE
+                display_color = arcade.color.BLACK
             else:
                 display_color = ghost.color
 
