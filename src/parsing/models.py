@@ -5,7 +5,8 @@ Defines default constants and Pydantic models for level and game configuration.
 
 import logging
 from typing import Any
-from pydantic import BaseModel, Field, field_validator, ValidationInfo, model_validator
+from pydantic import (
+    BaseModel, Field, field_validator, ValidationInfo, model_validator)
 
 logger = logging.getLogger("pacman")
 
@@ -83,12 +84,19 @@ class LevelConfig(BaseModel):
         return value
 
 
-def get_default_level() -> list[LevelConfig]:
-    """Provide default level config and log a warning when field is missing."""
+def get_default_levels() -> list[LevelConfig]:
+    """
+    Provide default levels config and log a warning when field is missing.
+
+    Returns:
+        Ten default levels
+    """
     logger.warning(f"Field 'level' is totally missing from config. "
-                   f"Clamped to default value: "
+                   f"Clamped to 10 default levels: "
                    f"{DEFAULT_WIDTH} * {DEFAULT_HEIGHT}")
-    return [LevelConfig(width=DEFAULT_WIDTH, height=DEFAULT_HEIGHT)]
+    return [LevelConfig(
+        width=DEFAULT_WIDTH, height=DEFAULT_HEIGHT
+        ) for _ in range(10)]
 
 
 class Config(BaseModel):
@@ -106,7 +114,7 @@ class Config(BaseModel):
         level_max_time: Maximum time for each level.
     """
 
-    level: list[LevelConfig] = Field(default_factory=get_default_level)
+    level: list[LevelConfig] = Field(default_factory=get_default_levels)
     highscore_filename: str = Field(default=DEFAULT_HIGH_SCORES_FILE_NAME)
     lives: int = Field(default=DEFAULT_LIVES)
     pacgum: int = Field(default=DEFAULT_PACGUM)
@@ -127,6 +135,15 @@ class Config(BaseModel):
         """
         if not isinstance(data, dict):
             return data
+
+        if not data:
+            data["level"] = [
+                {
+                    "width": DEFAULT_WIDTH, "height": DEFAULT_HEIGHT
+                } for _ in range(10)
+                ]
+            return data
+
         int_fields = {
             "lives": DEFAULT_LIVES,
             "pacgum": DEFAULT_PACGUM,
@@ -271,29 +288,31 @@ class Config(BaseModel):
 
     @field_validator("level", mode="before")
     @classmethod
-    def get_validate_level_value(cls, value: Any) -> list:
+    def get_validate_levels_value(cls, value: Any) -> list:
         """
         Validate the level values.
-        Get the level default values if the field "level" is empty,
-        null, or invalid.
+        Ensures the list contains at least 10 levels to respect game rules.
         """
+        valid_levels = []
+
         if not value or not isinstance(value, list):
             logger.warning(f"Invalid value for level field: {value}. "
-                           f"Clamped to default value: "
-                           f"{DEFAULT_WIDTH} * {DEFAULT_HEIGHT}")
-            return [{"width": DEFAULT_WIDTH, "height": DEFAULT_HEIGHT}]
+                           f"Clamped to 10 default levels.")
+        else:
+            for item in value:
+                if isinstance(item, dict):
+                    valid_levels.append(item)
+                else:
+                    logger.warning(
+                        f"Ignored invalid level item (expected dict, "
+                        f"got {type(item).__name__}): {item}"
+                    )
 
-        valid_levels = []
-        for item in value:
-            if isinstance(item, dict):
-                valid_levels.append(item)
-            else:
-                logger.warning(f"Ignored invalid level item (expected dict, got {type(item).__name__}): {item}")
-
-        if not valid_levels:
-            logger.warning("No valid levels found in the list. "
-                           f"Clamped to default value: "
-                           f"{DEFAULT_WIDTH} * {DEFAULT_HEIGHT}")
-            return [{"width": DEFAULT_WIDTH, "height": DEFAULT_HEIGHT}]
+        if len(valid_levels) < 10:
+            logger.warning(f"Only {len(valid_levels)} valid levels found. "
+                           f"Padding with default levels to reach 10.")
+            while len(valid_levels) < 10:
+                valid_levels.append(
+                    {"width": DEFAULT_WIDTH, "height": DEFAULT_HEIGHT})
 
         return valid_levels

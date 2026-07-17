@@ -24,7 +24,9 @@ class GameView(arcade.View):
 
     def __init__(self, config: Config,
                  level_index: int = 0,
-                 player: Player = None) -> None:
+                 player: Player = None,
+                 cheat_mode_enabled: bool = False,
+                 ghosts_frozen: bool = False) -> None:
         """
         Initialize the game view, maze data, and player object.
         """
@@ -77,8 +79,8 @@ class GameView(arcade.View):
 
         self.is_game_over = False
 
-        self.cheat_mode_enabled: bool = False
-        self.ghosts_frozen: bool = False
+        self.cheat_mode_enabled: bool = cheat_mode_enabled
+        self.ghosts_frozen: bool = ghosts_frozen
 
     def setup_collectibles(self) -> None:
         """
@@ -242,7 +244,9 @@ class GameView(arcade.View):
         if self.level_index + 1 < len(self.config.level):
             next_view = GameView(self.config,
                                  self.level_index + 1,
-                                 player=self.player)
+                                 player=self.player,
+                                 cheat_mode_enabled=self.cheat_mode_enabled,
+                                 ghosts_frozen=self.ghosts_frozen)
             self.window.show_view(next_view)
         else:
 

@@ -35,4 +35,4 @@ lint-strict:
 
 test:
 	@echo "Launching the entire suite of tests..."
-	@uv run pytest -v
+	@uv run pytest tests/ -v
