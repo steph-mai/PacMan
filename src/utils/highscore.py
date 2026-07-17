@@ -1,5 +1,8 @@
 import json
 import os
+import logging
+
+logger = logging.getLogger("pacman")
 
 
 class HighScoreManager:
@@ -34,10 +37,56 @@ class HighScoreManager:
 
         try:
             with open(self.filepath, "r", encoding="utf-8") as file:
-                return json.load(file)
-        except (json.JSONDecodeError, IOError):
-            print("[!] Warning: Highscore file is corrupted or unreadable. "
-                  "Starting fresh.")
+                data = json.load(file)
+
+            if not isinstance(data, list):
+                logger.warning(f"Highscore root is not a list "
+                               f"(got {type(data).__name__}). "
+                               f"Starting fresh.")
+                return []
+
+            valid_scores = []
+            for item in data:
+                if isinstance(
+                        item, dict) and "name" in item and "score" in item:
+                    try:
+                        score_val = int(item["score"])
+
+                        if score_val < 0:
+                            logger.warning(
+                                f"Highscore rejected: negative score "
+                                f"({score_val}) for '{item.get('name')}'.")
+                            continue
+
+                        raw_name = str(item["name"])
+                        safe_name = "".join(
+                            c for c in raw_name
+                            if c.isalnum() or c.isspace()
+                        )[:10]
+
+                        if raw_name != safe_name:
+                            logger.warning(
+                                f"Highscore sanitized: name '{raw_name}' "
+                                f"changed to '{safe_name}'.")
+
+                        if not safe_name.strip():
+                            safe_name = "Anonymous"
+                            logger.warning(
+                                "Highscore sanitized: empty/invalid name "
+                                "replaced by 'Anonymous'.")
+
+                        valid_scores.append({
+                            "name": safe_name,
+                            "score": score_val
+                        })
+                    except (ValueError, TypeError):
+                        continue
+
+            return valid_scores
+
+        except (json.JSONDecodeError, IOError) as e:
+            logger.warning(f"Highscore file is corrupted or unreadable ({e}). "
+                           f"Starting fresh.")
             return []
 
     def add_score(self, player_name: str, score: int) -> None:
@@ -55,7 +104,8 @@ class HighScoreManager:
         if not safe_name.strip():
             safe_name = "Anonymous"
 
-        self.scores.append({"name": safe_name, "score": score})
+        safe_score = max(0, int(score))
+        self.scores.append({"name": safe_name, "score": safe_score})
 
         self.scores.sort(key=lambda x: int(x["score"]), reverse=True)
 
@@ -71,4 +121,4 @@ class HighScoreManager:
             with open(self.filepath, "w", encoding="utf-8") as file:
                 json.dump(self.scores, file, indent=4)
         except IOError as e:
-            print(f"[!] Error saving highscores: {e}")
+            logger.error(f"Error saving highscores to disk: {e}")

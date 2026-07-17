@@ -60,11 +60,24 @@ class Loader:
         clean_json_str = "".join(clean_lines)
 
         if not clean_json_str.strip():
-            logger.warning(f"file '{file_name}' is empty. "
-                           f"Loading safe defaults.")
+            logger.warning("Configuration file is completely empty. "
+                           "Loading safe defaults.")
             return Config()
+
         try:
             config_dict = json.loads(clean_json_str)
+
+            if not isinstance(config_dict, dict):
+                logger.warning(f"Configuration root must be a dictionary "
+                               f"(got {type(config_dict).__name__}). "
+                               f"Loading safe defaults.")
+                return Config()
+
+            if not config_dict:
+                logger.warning("Configuration JSON is valid but empty {}. "
+                               "Loading safe defaults.")
+                return Config()
+
             return Config(**config_dict)
 
         except json.JSONDecodeError as e:

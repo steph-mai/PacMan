@@ -215,7 +215,7 @@ class PokeyGhost(Ghost):
             self, maze: list[list[int]], player: Player) -> int:
         distance_square_to_player = _calculate_as_the_crow_flies_distance(
             self.row, self.col, player.row, player.col)
-        if distance_square_to_player > 25:
+        if distance_square_to_player > 64:
             return _get_direction_towards_target(
                 self, maze, player.row, player.col)
         else:

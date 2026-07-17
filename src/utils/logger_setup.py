@@ -35,5 +35,6 @@ def setup_logger() -> None:
         ]
     )
 
-    # pour ne pas afficher les messages d'info/de debug éventuels d'arcade
+    # TODO enlever ! pour ne pas afficher les messages d'info/de debug
+    #  éventuels d'arcade
     logging.getLogger("arcade").setLevel(logging.WARNING)
