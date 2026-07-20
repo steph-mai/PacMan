@@ -1,12 +1,15 @@
-from src.mlx_wrapper.game_view import GameView
-from src.mlx_wrapper.game_manager import GameManager
+
+from .arcade_views.menu import MenuView
 from src.utils.logger_setup import setup_logger
 from src.parsing.loader import Loader
+import arcade
 import sys
-import pygame
+import pyglet
+pyglet.options['audio'] = ('silent',)
 
 
-def main():
+def main() -> None:
+    """Main function to run PacMan"""
     try:
         setup_logger()
         loader = Loader()
@@ -15,19 +18,20 @@ def main():
             sys.exit(1)
         config_file = sys.argv[1]
         config = loader.config_file_load(config_file)
-
-        manager = GameManager(1280, 720, "PacMan")
-        game_view = GameView(manager.engine, config, manager)
-        manager.set_view(game_view)
-        manager.run()
+        window = arcade.Window(1280, 720,
+                               "PacMan",
+                               resizable=True)
+        menu = MenuView(config)
+        window.show_view(menu)
+        arcade.run()
     except KeyboardInterrupt:
         print("\n[!] Game aborted by user (Ctrl+C). "
               "Shutting down...")
-        pygame.quit()
+        arcade.exit()
         sys.exit(130)
     except Exception as e:
         print(f"\n[!] An unexpected error occurred: {e}")
-        pygame.quit()
+        arcade.exit()
         sys.exit(1)
 
 

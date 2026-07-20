@@ -134,7 +134,7 @@ class GameOverView(arcade.View):
 
         from .menu import MenuView
         menu_view = MenuView(self.config)
-        self.window.show_view(menu_view)
+        self.manager.set_view(menu_view)
 
     def on_draw(self) -> None:
         """

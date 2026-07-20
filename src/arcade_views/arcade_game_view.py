@@ -10,7 +10,7 @@ from src.ai.behaviors import SpeedyGhost, ShadowGhost, BashfulGhost, PokeyGhost
 from src.ai.states import GhostState
 from src.parsing.models import Config
 from mazegenerator import MazeGenerator
-from .game_over_view import GameOverView
+from .arcade_game_over_view import GameOverView
 
 
 logger = logging.getLogger("pacman")

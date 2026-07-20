@@ -1,7 +1,7 @@
 import arcade
 import arcade.gui
 # from arcade.gui.widgets import UISpriteWidget
-from .game_view import GameView
+from .arcade_game_view import GameView
 from src.parsing.models import Config
 
 
@@ -60,7 +60,7 @@ class MenuView(arcade.View):
 
         @game_btn.event("on_click")
         def on_click_game(event: arcade.gui.UIOnClickEvent) -> None:
-            self.window.show_view(GameView(self.config))
+            self.manager.set_view(GameView(self.config))
 
         @quit_btn.event("on_click")
         def on_click_quit(event: arcade.gui.UIOnClickEvent) -> None:
