@@ -2,8 +2,7 @@
 Logger setup utilities.
 
 This module provides a helper to configure the root logger with a file
-handler and a stream handler, and to silence lower-level logs from
-the arcade library.
+handler and a stream handler.
 """
 
 import logging
@@ -14,8 +13,7 @@ def setup_logger() -> None:
 
     This sets the logging level to WARNING, defines a timestamped log
     format, writes logs to `pacman.log`, and also prints them to the
-    console. It also ensures that the `arcade` logger only emits warning
-    and more severe messages.
+    console.
 
     Returns:
         None
@@ -34,7 +32,3 @@ def setup_logger() -> None:
             logging.StreamHandler()
         ]
     )
-
-    # TODO enlever ! pour ne pas afficher les messages d'info/de debug
-    #  éventuels d'arcade
-    logging.getLogger("arcade").setLevel(logging.WARNING)

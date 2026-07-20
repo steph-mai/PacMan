@@ -53,12 +53,15 @@ class LevelConfig(BaseModel):
         dimensions = {"width": DEFAULT_WIDTH, "height": DEFAULT_HEIGHT}
         for field, default_val in dimensions.items():
             if field not in data:
-                logger.warning(f"Level field '{field}' is missing. Clamped to {default_val}.")
+                logger.warning(f"Level field '{field}' is missing. "
+                               f"Clamped to {default_val}.")
                 data[field] = default_val
             else:
                 val = data[field]
                 if type(val) is not int or isinstance(val, bool):
-                    logger.warning(f"Level field '{field}' has invalid type ({type(val).__name__}). Expected int. Clamped to {default_val}.")
+                    logger.warning(f"Level field '{field}' has invalid type "
+                                   f"({type(val).__name__}). Expected int. "
+                                   f"Clamped to {default_val}.")
                     data[field] = default_val
         return data
 
@@ -256,6 +259,9 @@ class Config(BaseModel):
         }
 
         if points < MIN_POINTS or points > MAX_POINTS:
+            # MYPY error correction :
+            assert info.field_name is not None, (
+                "field_name cannot be None in a field_validator")
             fallback_value = default_values[info.field_name]
             logger.warning(f"{info.field_name} is invalid ({points}). "
                            f"Clamped to {fallback_value}.")
@@ -288,7 +294,7 @@ class Config(BaseModel):
 
     @field_validator("level", mode="before")
     @classmethod
-    def get_validate_levels_value(cls, value: Any) -> list:
+    def get_validate_levels_value(cls, value: Any) -> list[dict[str, int]]:
         """
         Validate the level values.
         Ensures the list contains at least 10 levels to respect game rules.
