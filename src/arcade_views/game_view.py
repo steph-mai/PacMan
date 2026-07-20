@@ -24,7 +24,7 @@ class GameView(arcade.View):
 
     def __init__(self, config: Config,
                  level_index: int = 0,
-                 player: Player = None,
+                 player: Player | None = None,
                  cheat_mode_enabled: bool = False,
                  ghosts_frozen: bool = False) -> None:
         """

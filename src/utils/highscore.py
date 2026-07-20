@@ -45,7 +45,7 @@ class HighScoreManager:
                                f"Starting fresh.")
                 return []
 
-            valid_scores = []
+            valid_scores: list[dict[str, str | int]] = []
             for item in data:
                 if isinstance(
                         item, dict) and "name" in item and "score" in item:
