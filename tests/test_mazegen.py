@@ -1,39 +1,29 @@
-# test running with:
-# uv run tests/test_mazegen.py
-
 from mazegenerator import MazeGenerator  # type: ignore[import-untyped]
 
-# Create a simple 20x20 maze
-maze_gen = MazeGenerator(
-    size=(20, 20), perfect=False)
 
-# Get the maze structure
-maze_grid: list[list[int]] = maze_gen.maze
-shortest_path: list[tuple[int, int]] = maze_gen.shortest_path
+def test_maze_dimensions():
+    """Checks that the requested dimensions are respected."""
+    maze_gen = MazeGenerator(size=(20, 20), perfect=False)
+    maze_grid = maze_gen.maze
 
-print(f"Maze dimensions: {len(maze_grid[0])}x{len(maze_grid)}")
-print(f"Entry: {maze_gen.maze_entry}, Exit: {maze_gen.maze_exit}")
-print(f"Shortest path length: {len(shortest_path)}\n\n")
-print(len(maze_gen.maze))
-print("\n\n")
-print(len(maze_gen.maze[1]))
-print("\n\n")
-print(maze_gen.maze[1][0])
-print("\n\n")
-print(maze_gen.maze[1][1])
-print("\n\n")
-print(maze_gen.maze[1][2])
-print("\n\n")
-print(maze_gen.maze[1][3])
-print("\n\n")
-print(maze_gen.maze[1][4])
-print("\n\n")
-print(maze_gen.maze[1][5])
-print("\n\n")
-print(maze_gen.maze[1][6])
-print("\n\n")
-print(maze_gen.maze[1][7])
-print("\n\n")
-print(maze_gen.maze[1][8])
-print("\n\n")
-print(maze_gen.maze[1][9])
+    assert len(maze_grid) == 20, "The maze height should be 20"
+    assert len(maze_grid[0]) == 20, "The maze width should be 20"
+
+
+def test_maze_pathfinding():
+    """Checks that an entry, an exit, and a valid path actually exist."""
+    maze_gen = MazeGenerator(size=(20, 20), perfect=False)
+
+    assert maze_gen.maze_entry is not None, "The maze must have an entry"
+    assert maze_gen.maze_exit is not None, "The maze must have an exit"
+    assert len(maze_gen.shortest_path) > 0, "A valid path must exist"
+
+
+def test_maze_grid_data():
+    """Checks that the grid contains valid data (integers)."""
+    maze_gen = MazeGenerator(size=(20, 20), perfect=False)
+
+    for i in range(10):
+        cell_value = maze_gen.maze[1][i]
+        assert isinstance(
+            cell_value, int), f"The cell at [1][{i}] is not an integer"
