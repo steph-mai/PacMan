@@ -38,7 +38,7 @@ class BaseView(ABC):
         pass
 
     @abstractmethod
-    def on_event(self, event: Any) -> None:
+    def on_key_press(self, keycode: int) -> None:
         """Handle an incoming event.
 
         Args:

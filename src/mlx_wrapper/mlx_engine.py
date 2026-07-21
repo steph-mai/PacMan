@@ -1,5 +1,8 @@
+from typing import Callable
 import pygame
+import time
 import logging
+import sys
 
 logger = logging.getLogger()
 
@@ -13,10 +16,14 @@ class MLXEngine:
     """
 
     def __init__(self) -> None:
-        """Initialize pygame, font, and clock."""
+        """Initialize pygame and font (MLX-like font)."""
         pygame.init()
-        self.font = pygame.font.SysFont("monospace", 16)
-        self.clock = pygame.time.Clock()
+        self.font = pygame.font.SysFont(None, 24)
+        self.last_time = time.time()
+
+        self.key_hook_function: Callable[[int], None] | None = None
+        self.close_hook_function: Callable[[], None] | None = None
+        self.loop_hook_function: Callable[[float], None] | None = None
 
     def create_window(self, width: int, height: int, title: str):
         """Create a window with the given dimensions and title.
@@ -62,27 +69,6 @@ class MLXEngine:
         """
         self.screen.fill(color)
 
-    def tick(self, fps: int = 60) -> float:
-        """Advance the clock and return the elapsed time in seconds.
-
-        Args:
-            fps: Target frames per second.
-
-        Returns:
-            The time elapsed since the last call in seconds.
-        """
-        ms_passed = self.clock.tick(fps)
-        delta_time = ms_passed / 1000
-        return delta_time
-
-    def get_events(self) -> list[pygame.event.Event]:
-        """Return the list of pending pygame events.
-
-        Returns:
-            A list of pygame Event objects.
-        """
-        return pygame.event.get()
-
     def load_image(self, filepath: str) -> pygame.Surface:
         """Load an image from a file path and return a surface.
 
@@ -113,6 +99,42 @@ class MLXEngine:
             y: Y position in pixels.
         """
         self.screen.blit(image, (x, y))
+
+    def mlx_key_hook(self, callback: Callable[[int], None]) -> None:
+        self.key_hook_function = callback
+
+    def mlx_close_hook(self, callback: Callable[[], None]) -> None:
+        self.close_hook_function = callback
+
+    def mlx_loop_hook(self, callback: Callable[[float], None]) -> None:
+        self.loop_hook_function = callback
+
+    def mlx_loop(self, fps: int = 60) -> None:
+        while True:
+            current_time = time.time()
+            delta_time = current_time - self.last_time
+            time_to_wait = (1 / fps) - delta_time
+
+            if time_to_wait > 0:
+                time.sleep(time_to_wait)
+                current_time = time.time()
+                delta_time = current_time - self.last_time
+
+            self.last_time = current_time
+
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    if self.close_hook_function:
+                        self.close_hook_function()
+                    else:
+                        pygame.quit()
+                        sys.exit(0)
+
+                elif event.type == pygame.KEYDOWN:
+                    if self.key_hook_function:
+                        self.key_hook_function(event.key)
+            if self.loop_hook_function:
+                self.loop_hook_function(delta_time)
 
     # ADD FOR TEST ONLY
     def draw_rectangle(self, x: int, y: int, width: int, height: int, color: tuple[int, int, int]) -> None:

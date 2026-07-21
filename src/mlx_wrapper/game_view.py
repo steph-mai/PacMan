@@ -452,30 +452,29 @@ class GameView(BaseView):
             self.engine.put_string(
                 10, 10, "Press C for Cheat Mode", cheat_mode_text_color)
 
-    def on_event(self, event) -> None:
+    def on_key_press(self, keycode: int) -> None:
         """
         Queue the user's keyboard inputs for player movement, and
         handle cheat mode toggles.
         """
-        if event.type == pygame.KEYDOWN:
-            if event.key in (pygame.K_UP, pygame.K_w):
-                self.player.queue_direction(NORTH)
-            elif event.key in (pygame.K_RIGHT, pygame.K_d):
-                self.player.queue_direction(EAST)
-            elif event.key in (pygame.K_DOWN, pygame.K_s):
-                self.player.queue_direction(SOUTH)
-            elif event.key in (pygame.K_LEFT, pygame.K_a):
-                self.player.queue_direction(WEST)
-            elif event.key == pygame.K_c:
-                self.cheat_mode_enabled = not self.cheat_mode_enabled
-                if not self.cheat_mode_enabled:
-                    self.player.is_invincible = False
-                    self.ghosts_frozen = False
-                    self.player.speed_boost = False
-                status = "ON" if self.cheat_mode_enabled else "OFF"
-                print(f"[CHEAT MODE] {status}")
-            elif self.cheat_mode_enabled:
-                self.handle_cheat_key(event.key)
+        if keycode in (pygame.K_UP, pygame.K_w):
+            self.player.queue_direction(NORTH)
+        elif keycode in (pygame.K_RIGHT, pygame.K_d):
+            self.player.queue_direction(EAST)
+        elif keycode in (pygame.K_DOWN, pygame.K_s):
+            self.player.queue_direction(SOUTH)
+        elif keycode in (pygame.K_LEFT, pygame.K_a):
+            self.player.queue_direction(WEST)
+        elif keycode == pygame.K_c:
+            self.cheat_mode_enabled = not self.cheat_mode_enabled
+            if not self.cheat_mode_enabled:
+                self.player.is_invincible = False
+                self.ghosts_frozen = False
+                self.player.speed_boost = False
+            status = "ON" if self.cheat_mode_enabled else "OFF"
+            print(f"[CHEAT MODE] {status}")
+        elif self.cheat_mode_enabled:
+            self.handle_cheat_key(keycode)
 
     def handle_cheat_key(self, key: int) -> None:
         """
