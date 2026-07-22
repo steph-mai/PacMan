@@ -15,6 +15,8 @@ from .arcade_game_over_view import GameOverView
 
 logger = logging.getLogger("pacman")
 CELL_SIZE = 32
+SCATTER_DELAY: float = 7.0
+CHASING_DELAY: float = 20.0
 
 
 class GameView(arcade.View):
@@ -81,6 +83,8 @@ class GameView(arcade.View):
 
         self.cheat_mode_enabled: bool = cheat_mode_enabled
         self.ghosts_frozen: bool = ghosts_frozen
+        self.phase_timer: float = 0.0
+        self.is_scatter_phase: bool = True
 
     def setup_collectibles(self) -> None:
         """
@@ -161,6 +165,46 @@ class GameView(arcade.View):
 
         self.ghosts = [blinky, inky, pinky, clyde]
 
+    def reverse_all_ghosts(self) -> None:
+        """Force all active chasing ghosts to immediately reverse
+        their direction.
+
+        This method is triggered during global phase transitions (e.g., from
+        Scatter to Chase). It explicitly ignores ghosts that are currently dead
+        or scared (running away) to prevent disrupting their specific
+        behaviors.
+        """
+        for ghost in self.ghosts:
+            if ghost.state == GhostState.CHASING:
+                ghost.reverse_course()
+
+    def update_ghosts_phase(self, delta_time: float) -> None:
+        """Update the global Chase/Scatter timer and trigger phase changes.
+
+        The global timer pauses while any ghost is scared. When the timer
+        exceeds the current phase's delay, it toggles the phase and forces
+        all active ghosts to reverse direction.
+
+        Args:
+            delta_time: The elapsed time since the previous update.
+        """
+        is_any_ghost_scared = any(
+            g.state == GhostState.RUNNING_AWAY for g in self.ghosts)
+        if is_any_ghost_scared:
+            return
+
+        self.phase_timer += delta_time
+
+        if self.phase_timer >= (
+                SCATTER_DELAY if self.is_scatter_phase else CHASING_DELAY):
+            self.phase_timer = 0.0
+            self.is_scatter_phase = not self.is_scatter_phase
+
+            for ghost in self.ghosts:
+                ghost.is_scatter_phase = self.is_scatter_phase
+
+            self.reverse_all_ghosts()
+
     def on_update(self, delta_time: float) -> None:
         """
         Update game logic: handle collectible consumption and game rules.
@@ -174,6 +218,7 @@ class GameView(arcade.View):
         self.player.update_movement(delta_time, self.level.maze)
 
         if not self.ghosts_frozen:
+            self.update_ghosts_phase(delta_time)
             for ghost in self.ghosts:
                 ghost.update_movement(
                     delta_time, self.level.maze,
@@ -226,6 +271,8 @@ class GameView(arcade.View):
         for ghost in self.ghosts:
             if ghost.row == self.player.row and\
                ghost.col == self.player.col:
+                if ghost.state == GhostState.DEAD:
+                    continue
                 if ghost.state == GhostState.RUNNING_AWAY:
                     ghost.die()
                     self.player.add_score(self.config.points_per_ghost)
