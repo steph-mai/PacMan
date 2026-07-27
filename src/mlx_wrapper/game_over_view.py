@@ -10,7 +10,7 @@ class GameOverView(BaseView):
     """
     View displayed when the game is over.
 
-    Allows entering a name for highscores and displays the leaderboard.
+    Allows entering a name for highscores.
     """
 
     def __init__(self,
@@ -50,7 +50,7 @@ class GameOverView(BaseView):
 
     def on_draw(self) -> None:
         """
-        Render the UI elements (titles, inputs, and highscores).
+        Render the UI elements (titles and inputs).
         """
         self.engine.clear_screen((50, 50, 50))
 
@@ -65,18 +65,6 @@ class GameOverView(BaseView):
         self.engine.put_string(200, 350, "Enter Name (Press ENTER to save):",
                                (255, 255, 255))
         self.engine.put_string(200, 400, self.player_name + "_", (255, 255, 0))
-
-        self.engine.put_string(700, 150, "TOP 10 SCORES", (255, 255, 0))
-
-        top_scores = self.score_manager.scores[:10]
-
-        if not top_scores:
-            self.engine.put_string(700, 220, "No scores yet", (200, 200, 200))
-        else:
-            for rank, entry in enumerate(top_scores, start=1):
-                row_text = f"{rank:>2}. {entry['name']:<10} {entry['score']}"
-                self.engine.put_string(700, 200 + (rank * 30), row_text,
-                                       (255, 255, 255))
 
     def on_key_press(self, keycode: int) -> None:
         """

@@ -437,9 +437,9 @@ class GameView(BaseView):
         cheat_mode_text_color = (100, 150, 255)
         bottom_y = self.engine.screen.get_height()
 
-        self.engine.put_string(
+        self.engine.put_small_string(
             10, bottom_y - 30, f"Score: {self.player.score}", text_color)
-        self.engine.put_string(
+        self.engine.put_small_string(
             10, bottom_y - 50, f"Lives: {self.player.lives}", text_color)
 
         if self.cheat_mode_enabled:
@@ -455,16 +455,16 @@ class GameView(BaseView):
             if active_cheats:
                 status_text += " | " + " | ".join(active_cheats)
 
-            self.engine.put_string(
+            self.engine.put_small_string(
                 10, bottom_y - 70, status_text, text_color)
 
             help_text = ("F1 Invincibility | F2 Skip Level | "
                          "F3 Freeze Ghosts | F4 Extra Life | F5 Speed Boost")
-            self.engine.put_string(
+            self.engine.put_small_string(
                 10, 10, help_text, cheat_mode_text_color)
 
         else:
-            self.engine.put_string(
+            self.engine.put_small_string(
                 10, 10, "Press C for Cheat Mode", cheat_mode_text_color)
 
     def on_key_press(self, keycode: int) -> None:

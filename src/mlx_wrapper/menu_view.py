@@ -4,13 +4,15 @@ from src.mlx_wrapper.base_view import BaseView
 from src.mlx_wrapper.mlx_engine import MLXEngine
 from src.mlx_wrapper.game_manager import GameManager
 from src.parsing.models import Config
+from src.utils.highscore import HighScoreManager
 
 
 class MenuView(BaseView):
     """
     Main menu view for map selection.
 
-    Allows the player to start the game or quit using keyboard navigation.
+    Allows the player to start the game or quit using keyboard navigation,
+    and displays the top 10 highscores.
     """
 
     def __init__(self,
@@ -32,6 +34,8 @@ class MenuView(BaseView):
         self.options: list[str] = ["Launch Game", "Quit"]
         self.selected_index: int = 0
 
+        self.score_manager = HighScoreManager()
+
     def on_update(self, delta_time: float) -> None:
         """
         Update the view state.
@@ -47,16 +51,29 @@ class MenuView(BaseView):
         """
         self.engine.clear_screen((50, 50, 50))
 
-        self.engine.put_string(550, 200, "PAC-MAN", (255, 255, 0))
+        self.engine.put_title_string(480, 200, "PAC-MAN", (255, 255, 0))
 
         for i, option in enumerate(self.options):
             color = (255, 0, 0) if i == self.selected_index \
                 else (255, 255, 255)
             prefix = "> " if i == self.selected_index else "  "
 
-            self.engine.put_string(550, 350 + (i * 50),
+            self.engine.put_string(530, 350 + (i * 50),
                                    f"{prefix}{option}",
                                    color)
+
+        self.engine.put_string(900, 150, "TOP 10 SCORES", (255, 255, 0))
+
+        top_scores = self.score_manager.scores[:10]
+
+        if not top_scores:
+            self.engine.put_small_string(900, 220, "No scores yet",
+                                         (200, 200, 200))
+        else:
+            for rank, entry in enumerate(top_scores, start=1):
+                row_text = f"{rank:>2}. {entry['name']:<10} {entry['score']}"
+                self.engine.put_small_string(900, 200 + (rank * 30), row_text,
+                                             (255, 255, 255))
 
     def on_key_press(self, keycode: int) -> None:
         """

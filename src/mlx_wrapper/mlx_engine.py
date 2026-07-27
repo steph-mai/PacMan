@@ -18,7 +18,9 @@ class MLXEngine:
     def __init__(self) -> None:
         """Initialize pygame and font (MLX-like font)."""
         pygame.init()
-        self.font = pygame.font.SysFont(None, 24)
+        self.titlefont = pygame.font.SysFont(None, 100)
+        self.font = pygame.font.SysFont(None, 40)
+        self.smallfont = pygame.font.SysFont(None, 24)
         self.last_time = time.time()
 
         self.key_hook_function: Callable[[int], None] | None = None
@@ -59,6 +61,38 @@ class MLXEngine:
             color: RGB color tuple for the text.
         """
         text_to_image = self.font.render(text, True, color)
+        self.screen.blit(text_to_image, (x, y))
+
+    def put_title_string(self,
+                         x: int,
+                         y: int,
+                         text: str,
+                         color: tuple[int, int, int]) -> None:
+        """Render title text at the specified screen coordinates.
+
+        Args:
+            x: X position in pixels.
+            y: Y position in pixels.
+            text: String to render.
+            color: RGB color tuple for the text.
+        """
+        text_to_image = self.titlefont.render(text, True, color)
+        self.screen.blit(text_to_image, (x, y))
+
+    def put_small_string(self,
+                         x: int,
+                         y: int,
+                         text: str,
+                         color: tuple[int, int, int]) -> None:
+        """Render small text at the specified screen coordinates.
+
+        Args:
+            x: X position in pixels.
+            y: Y position in pixels.
+            text: String to render.
+            color: RGB color tuple for the text.
+        """
+        text_to_image = self.smallfont.render(text, True, color)
         self.screen.blit(text_to_image, (x, y))
 
     def render_frame(self) -> None:
