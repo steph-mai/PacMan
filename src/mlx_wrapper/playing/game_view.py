@@ -4,9 +4,9 @@ from src.mlx_wrapper.mlx_engine import MLXEngine
 from src.mlx_wrapper.game_manager import GameManager
 from src.parsing.models import Config
 from src.obj.entity import NORTH, EAST, SOUTH, WEST
+from src.obj.player import Player
 from src.ai.behaviors import SpeedyGhost, ShadowGhost, BashfulGhost
 from src.ai.states import GhostState
-
 from src.mlx_wrapper.playing.asset_manager import AssetManager
 from src.mlx_wrapper.playing.game_session import GameSession
 
@@ -21,7 +21,8 @@ class GameView(BaseView):
 
     def __init__(self, engine: MLXEngine, config: Config,
                  manager: GameManager, level_index: int = 0,
-                 player=None, cheat_mode_enabled: bool = False,
+                 player: Player | None = None,
+                 cheat_mode_enabled: bool = False,
                  ghosts_frozen: bool = False) -> None:
         """
         Initialize the view, load assets, and start the game session.
