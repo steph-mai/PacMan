@@ -259,7 +259,6 @@ class Config(BaseModel):
         }
 
         if points < MIN_POINTS or points > MAX_POINTS:
-            # MYPY error correction :
             assert info.field_name is not None, (
                 "field_name cannot be None in a field_validator")
             fallback_value = default_values[info.field_name]

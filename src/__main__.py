@@ -23,7 +23,6 @@ def main() -> None:
 
         manager = GameManager(1280, 720, "PacMan")
 
-        # We start with the Menu View instead of the Game View
         menu_view = MenuView(manager.engine, manager, config)
         manager.set_view(menu_view)
 
