@@ -12,6 +12,7 @@ dependencies = [
     "pydantic",
     "arcade",
     "mazegenerator",
+    "pygame"
 ]
 
 [dependency-groups]

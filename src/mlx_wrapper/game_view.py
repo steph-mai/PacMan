@@ -1,4 +1,7 @@
-import arcade
+import pygame
+from src.mlx_wrapper.base_view import BaseView
+from src.mlx_wrapper.mlx_engine import MLXEngine
+from src.mlx_wrapper.game_manager import GameManager
 import random
 import logging
 import sys
@@ -10,21 +13,19 @@ from src.ai.behaviors import SpeedyGhost, ShadowGhost, BashfulGhost, PokeyGhost
 from src.ai.states import GhostState
 from src.parsing.models import Config
 from mazegenerator import MazeGenerator
-from .game_over_view import GameOverView
 
 
 logger = logging.getLogger("pacman")
 CELL_SIZE = 32
-SCATTER_DELAY: float = 7.0
-CHASING_DELAY: float = 20.0
 
 
-class GameView(arcade.View):
+class GameView(BaseView):
     """
     The main gameplay view displaying the maze and handling player actions.
     """
 
-    def __init__(self, config: Config,
+    def __init__(self, engine: MLXEngine, config: Config,
+                 manager: GameManager,
                  level_index: int = 0,
                  player: Player | None = None,
                  cheat_mode_enabled: bool = False,
@@ -32,10 +33,54 @@ class GameView(arcade.View):
         """
         Initialize the game view, maze data, and player object.
         """
-        super().__init__()
+        super().__init__(engine)
+        self.manager = manager
         self.config = config
         self.level_index = level_index
-        arcade.set_background_color(arcade.color.WHITE)
+
+        self.wall_h_img = self.engine.load_image(
+            "inc/images/maze/horizontalwall.png")
+        self.wall_v_img = self.engine.load_image(
+            "inc/images/maze/verticalwall.png")
+        self.player_images = {
+            NORTH: [
+                self.engine.load_image("inc/images/pacman/pacman-up/1.png"),
+                self.engine.load_image("inc/images/pacman/pacman-up/2.png"),
+                self.engine.load_image("inc/images/pacman/pacman-up/3.png")
+            ],
+            EAST: [
+                self.engine.load_image("inc/images/pacman/pacman-right/1.png"),
+                self.engine.load_image("inc/images/pacman/pacman-right/2.png"),
+                self.engine.load_image("inc/images/pacman/pacman-right/3.png")
+            ],
+            SOUTH: [
+                self.engine.load_image("inc/images/pacman/pacman-down/1.png"),
+                self.engine.load_image("inc/images/pacman/pacman-down/2.png"),
+                self.engine.load_image("inc/images/pacman/pacman-down/3.png")
+            ],
+            WEST: [
+                self.engine.load_image("inc/images/pacman/pacman-left/1.png"),
+                self.engine.load_image("inc/images/pacman/pacman-left/2.png"),
+                self.engine.load_image("inc/images/pacman/pacman-left/3.png")
+            ]
+        }
+        self.player_anim_timer: float = 0.0
+        self.player_anim_frame: int = 0
+
+        self.pacgum_img = self.engine.load_image(
+            "inc/images/maze/other/dot.png")
+        self.super_pacgum_img = self.engine.load_image(
+            "inc/images/maze/other/strawberry.png")
+        self.blinky_img = self.engine.load_image(
+            "inc/images/ghosts/blinky.png")
+        self.inky_img = self.engine.load_image("inc/images/ghosts/inky.png")
+        self.pinky_img = self.engine.load_image("inc/images/ghosts/pinky.png")
+        self.clyde_img = self.engine.load_image("inc/images/ghosts/clyde.png")
+        self.ghost_scared_img = self.engine.load_image(
+            "inc/images/ghosts/blue_ghost.png")
+        # self.ghost_flashing_img = self.engine.load_image(
+        #     "assets/ghost_flashing.png")
+        # self.ghost_dead_img = self.engine.load_image("assets/ghost_dead.png")
 
         safe_level_index = min(level_index, len(self.config.level) - 1)
         level_config = self.config.level[safe_level_index]
@@ -83,8 +128,6 @@ class GameView(arcade.View):
 
         self.cheat_mode_enabled: bool = cheat_mode_enabled
         self.ghosts_frozen: bool = ghosts_frozen
-        self.phase_timer: float = 0.0
-        self.is_scatter_phase: bool = True
 
     def setup_collectibles(self) -> None:
         """
@@ -136,15 +179,15 @@ class GameView(arcade.View):
             start_col=0,
             max_rows=self.rows,
             max_cols=self.cols,
-            color=arcade.color.RED
-        )
+            color=(255, 0, 0)
+            )
 
         inky = BashfulGhost(
             start_row=0,
             start_col=self.cols - 1,
             max_rows=self.rows,
             max_cols=self.cols,
-            color=arcade.color.CYAN
+            color=(0, 255, 255)
         )
 
         pinky = SpeedyGhost(
@@ -152,7 +195,7 @@ class GameView(arcade.View):
             start_col=0,
             max_rows=self.rows,
             max_cols=self.cols,
-            color=arcade.color.PINK
+            color=(255, 105, 180)
         )
 
         clyde = PokeyGhost(
@@ -160,50 +203,10 @@ class GameView(arcade.View):
             start_col=self.cols - 1,
             max_rows=self.rows,
             max_cols=self.cols,
-            color=arcade.color.ORANGE
+            color=(255, 165, 0)
         )
 
         self.ghosts = [blinky, inky, pinky, clyde]
-
-    def reverse_all_ghosts(self) -> None:
-        """Force all active chasing ghosts to immediately reverse
-        their direction.
-
-        This method is triggered during global phase transitions (e.g., from
-        Scatter to Chase). It explicitly ignores ghosts that are currently dead
-        or scared (running away) to prevent disrupting their specific
-        behaviors.
-        """
-        for ghost in self.ghosts:
-            if ghost.state == GhostState.CHASING:
-                ghost.reverse_course()
-
-    def update_ghosts_phase(self, delta_time: float) -> None:
-        """Update the global Chase/Scatter timer and trigger phase changes.
-
-        The global timer pauses while any ghost is scared. When the timer
-        exceeds the current phase's delay, it toggles the phase and forces
-        all active ghosts to reverse direction.
-
-        Args:
-            delta_time: The elapsed time since the previous update.
-        """
-        is_any_ghost_scared = any(
-            g.state == GhostState.RUNNING_AWAY for g in self.ghosts)
-        if is_any_ghost_scared:
-            return
-
-        self.phase_timer += delta_time
-
-        if self.phase_timer >= (
-                SCATTER_DELAY if self.is_scatter_phase else CHASING_DELAY):
-            self.phase_timer = 0.0
-            self.is_scatter_phase = not self.is_scatter_phase
-
-            for ghost in self.ghosts:
-                ghost.is_scatter_phase = self.is_scatter_phase
-
-            self.reverse_all_ghosts()
 
     def on_update(self, delta_time: float) -> None:
         """
@@ -215,10 +218,14 @@ class GameView(arcade.View):
         if self.is_game_over:
             return
 
+        self.player_anim_timer += delta_time
+        if self.player_anim_timer >= 0.1:
+            self.player_anim_timer = 0.0
+            self.player_anim_frame = (self.player_anim_frame + 1) % 3
+
         self.player.update_movement(delta_time, self.level.maze)
 
         if not self.ghosts_frozen:
-            self.update_ghosts_phase(delta_time)
             for ghost in self.ghosts:
                 ghost.update_movement(
                     delta_time, self.level.maze,
@@ -250,9 +257,17 @@ class GameView(arcade.View):
             if is_dead:
                 print(f"Game Over! Final Score: {self.player.score}")
                 self.is_game_over = True
-                self.window.show_view(GameOverView(self.player.score,
-                                                   self.config,
-                                                   victory=False))
+
+                # Import local pour éviter les imports circulaires
+                from src.mlx_wrapper.game_over_view import GameOverView
+                game_over = GameOverView(
+                    self.engine,
+                    self.manager,
+                    self.player.score,
+                    self.config,
+                    victory=False
+                )
+                self.manager.set_view(game_over)
             else:
                 self.player.reset_position()
 
@@ -271,8 +286,6 @@ class GameView(arcade.View):
         for ghost in self.ghosts:
             if ghost.row == self.player.row and\
                ghost.col == self.player.col:
-                if ghost.state == GhostState.DEAD:
-                    continue
                 if ghost.state == GhostState.RUNNING_AWAY:
                     ghost.die()
                     self.player.add_score(self.config.points_per_ghost)
@@ -289,117 +302,145 @@ class GameView(arcade.View):
         or prints victory if the game is finished.
         """
         if self.level_index + 1 < len(self.config.level):
-            next_view = GameView(self.config,
+            next_view = GameView(self.engine,
+                                 self.config,
+                                 self.manager,
                                  self.level_index + 1,
                                  player=self.player,
                                  cheat_mode_enabled=self.cheat_mode_enabled,
                                  ghosts_frozen=self.ghosts_frozen)
-            self.window.show_view(next_view)
+            self.manager.set_view(next_view)
         else:
-
             print(f"Game Won! Final Score: {self.player.score}")
             self.is_game_over = True
 
-            self.window.show_view(GameOverView(self.player.score,
-                                               self.config,
-                                               victory=True))
+            from src.mlx_wrapper.game_over_view import GameOverView
+            victory_view = GameOverView(
+                self.engine,
+                self.manager,
+                self.player.score,
+                self.config,
+                victory=True
+            )
+            self.manager.set_view(victory_view)
 
     def on_draw(self) -> None:
         """
         Render the maze walls, the player object and the ghosts objects.
         """
-        self.clear()
+        if self.is_game_over:
+            return
 
-        start_x_offset = ((self.window.width - (self.cols * CELL_SIZE)) / 2)
-        start_y_offset = ((self.window.height + (self.rows * CELL_SIZE)) / 2)
+        start_x_offset = ((self.engine.screen.get_width() - (
+            self.cols * CELL_SIZE)) // 2)
+        start_y_offset = ((self.engine.screen.get_height() - (
+            self.rows * CELL_SIZE)) // 2)
 
         for r in range(self.rows):
             for c in range(self.cols):
                 cell_value = self.level.maze[r][c]
 
-                x_left = start_x_offset + (c * CELL_SIZE)
-                x_right = x_left + CELL_SIZE
-                y_top = start_y_offset - (r * CELL_SIZE)
-                y_bottom = y_top - CELL_SIZE
+                x = start_x_offset + (c * CELL_SIZE)
+                y = start_y_offset + (r * CELL_SIZE)
 
                 if cell_value & NORTH:
-                    arcade.draw_line(x_left, y_top,
-                                     x_right, y_top,
-                                     arcade.color.BLACK, 2)
-                if cell_value & EAST:
-                    arcade.draw_line(x_right, y_top,
-                                     x_right, y_bottom,
-                                     arcade.color.BLACK, 2)
+                    self.engine.draw_image(self.wall_h_img, x, y)
+
                 if cell_value & SOUTH:
-                    arcade.draw_line(x_left, y_bottom, x_right, y_bottom,
-                                     arcade.color.BLACK, 2)
+                    self.engine.draw_image(self.wall_h_img, x, y + CELL_SIZE)
+
                 if cell_value & WEST:
-                    arcade.draw_line(x_left, y_top, x_left, y_bottom,
-                                     arcade.color.BLACK, 2)
+                    self.engine.draw_image(self.wall_v_img, x, y)
+
+                if cell_value & EAST:
+                    self.engine.draw_image(self.wall_v_img, x + CELL_SIZE, y)
 
         for r, c in self.pacgums:
-            x = start_x_offset + (c * CELL_SIZE) + (CELL_SIZE / 2)
-            y = start_y_offset - (r * CELL_SIZE) - (CELL_SIZE / 2)
-            arcade.draw_circle_filled(x, y, CELL_SIZE / 8, arcade.color.BLUE)
+            x = start_x_offset + (c * CELL_SIZE)
+            y = start_y_offset + (r * CELL_SIZE)
+            offset_x = (CELL_SIZE - self.pacgum_img.get_width()) // 2
+            offset_y = (CELL_SIZE - self.pacgum_img.get_height()) // 2
+            self.engine.draw_image(self.pacgum_img, x + offset_x, y + offset_y)
 
         for r, c in self.super_pacgums:
-            x = start_x_offset + (c * CELL_SIZE) + (CELL_SIZE / 2)
-            y = start_y_offset - (r * CELL_SIZE) - (CELL_SIZE / 2)
-            arcade.draw_circle_filled(x, y, CELL_SIZE / 4, arcade.color.RED)
+            x = start_x_offset + (c * CELL_SIZE)
+            y = start_y_offset + (r * CELL_SIZE)
+            offset_x = (CELL_SIZE - self.super_pacgum_img.get_width()) // 2
+            offset_y = (CELL_SIZE - self.super_pacgum_img.get_height()) // 2
+            self.engine.draw_image(self.super_pacgum_img,
+                                   x + offset_x, y + offset_y)
 
-        player_x = start_x_offset + (self.player.col *
-                                     CELL_SIZE) + (CELL_SIZE / 2)
-        player_y = start_y_offset - (self.player.row *
-                                     CELL_SIZE) - (CELL_SIZE / 2)
+        current_dir = self.player.current_direction
+        if current_dir not in self.player_images:
+            current_dir = EAST
 
-        player_color = arcade.color.ORANGE if (
-            self.player.is_invincible) else arcade.color.YELLOW
-        arcade.draw_circle_filled(
-            player_x,
-            player_y,
-            CELL_SIZE / 3,
-            player_color)
+        current_player_img = self.player_images[
+            current_dir][self.player_anim_frame]
+
+        player_x = start_x_offset + (self.player.col * CELL_SIZE)
+        player_y = start_y_offset + (self.player.row * CELL_SIZE)
+
+        p_offset_x = (CELL_SIZE - current_player_img.get_width()) // 2
+        p_offset_y = (CELL_SIZE - current_player_img.get_height()) // 2
+
+        self.engine.draw_image(current_player_img,
+                               player_x + p_offset_x,
+                               player_y + p_offset_y)
 
         for ghost in self.ghosts:
-            ghost_x = start_x_offset + (ghost.col *
-                                        CELL_SIZE) + (CELL_SIZE / 2)
-            ghost_y = start_y_offset - (ghost.row *
-                                        CELL_SIZE) - (CELL_SIZE / 2)
+            ghost_x = start_x_offset + (ghost.col * CELL_SIZE)
+            ghost_y = start_y_offset + (ghost.row * CELL_SIZE)
 
+            if isinstance(ghost, ShadowGhost):
+                base_ghost_img = self.blinky_img
+            elif isinstance(ghost, BashfulGhost):
+                base_ghost_img = self.inky_img
+            elif isinstance(ghost, SpeedyGhost):
+                base_ghost_img = self.pinky_img
+            elif isinstance(ghost, PokeyGhost):
+                base_ghost_img = self.clyde_img
+            else:
+                base_ghost_img = self.blinky_img
+
+            current_ghost_img = base_ghost_img
+            is_visible = True
+
+            current_ghost_img = base_ghost_img
             if ghost.state == GhostState.RUNNING_AWAY:
                 if ghost.is_flashing():
                     if int(ghost.scared_timer * 4) % 2 == 0:
-                        display_color = arcade.color.RED
+                        current_ghost_img = base_ghost_img
                     else:
-                        display_color = arcade.color.BLUE
+                        current_ghost_img = self.ghost_scared_img
                 else:
-                    display_color = arcade.color.BLUE
+                    current_ghost_img = self.ghost_scared_img
             elif ghost.state == GhostState.DEAD:
-                display_color = arcade.color.BLACK
-            else:
-                display_color = ghost.color
+                if int(ghost.death_timer * 8) % 2 == 0:
+                    current_ghost_img = base_ghost_img
+                else:
+                    is_visible = False
 
-            arcade.draw_circle_filled(
-                center_x=ghost_x,
-                center_y=ghost_y,
-                radius=CELL_SIZE / 2.5,
-                color=display_color
-            )
+            if is_visible:
+                g_offset_x = (CELL_SIZE - current_ghost_img.get_width()) // 2
+                g_offset_y = (CELL_SIZE - current_ghost_img.get_height()) // 2
+
+                self.engine.draw_image(current_ghost_img, ghost_x + g_offset_x,
+                                       ghost_y + g_offset_y)
 
         self.draw_hud()
 
     def draw_hud(self) -> None:
         """
-        Render the score, lives, and cheat mode status overlay. This
-        makes it easy for a reviewer to confirm each cheat's effect
-        without checking the console.
+        Render the score, lives, and cheat mode status overlay.
         """
-        arcade.draw_text(f"Score: {self.player.score}",
-                         10, self.window.height - 25,
-                         arcade.color.BLACK, 16)
-        arcade.draw_text(f"Lives: {self.player.lives}",
-                         10, self.window.height - 45,
-                         arcade.color.BLACK, 16)
+        text_color = (255, 255, 255)
+        cheat_mode_text_color = (100, 150, 255)
+        bottom_y = self.engine.screen.get_height()
+
+        self.engine.put_small_string(
+            10, bottom_y - 30, f"Score: {self.player.score}", text_color)
+        self.engine.put_small_string(
+            10, bottom_y - 50, f"Lives: {self.player.lives}", text_color)
 
         if self.cheat_mode_enabled:
             active_cheats = []
@@ -414,40 +455,41 @@ class GameView(arcade.View):
             if active_cheats:
                 status_text += " | " + " | ".join(active_cheats)
 
-            arcade.draw_text(status_text, 10, self.window.height - 70,
-                             arcade.color.RED, 14, bold=True)
+            self.engine.put_small_string(
+                10, bottom_y - 70, status_text, text_color)
 
             help_text = ("F1 Invincibility | F2 Skip Level | "
                          "F3 Freeze Ghosts | F4 Extra Life | F5 Speed Boost")
-            arcade.draw_text(help_text, 10, 10,
-                             arcade.color.DARK_BLUE, 12)
-        else:
-            arcade.draw_text("Press C for Cheat Mode",
-                             10, 10, arcade.color.DARK_BLUE, 12)
+            self.engine.put_small_string(
+                10, 10, help_text, cheat_mode_text_color)
 
-    def on_key_press(self, key: int, modifiers: int) -> None:
+        else:
+            self.engine.put_small_string(
+                10, 10, "Press C for Cheat Mode", cheat_mode_text_color)
+
+    def on_key_press(self, keycode: int) -> None:
         """
         Queue the user's keyboard inputs for player movement, and
         handle cheat mode toggles.
         """
-        if key in (arcade.key.UP, arcade.key.W):
+        if keycode in (pygame.K_UP, pygame.K_w):
             self.player.queue_direction(NORTH)
-        elif key in (arcade.key.RIGHT, arcade.key.D):
+        elif keycode in (pygame.K_RIGHT, pygame.K_d):
             self.player.queue_direction(EAST)
-        elif key in (arcade.key.DOWN, arcade.key.S):
+        elif keycode in (pygame.K_DOWN, pygame.K_s):
             self.player.queue_direction(SOUTH)
-        elif key in (arcade.key.LEFT, arcade.key.A):
+        elif keycode in (pygame.K_LEFT, pygame.K_a):
             self.player.queue_direction(WEST)
-        elif key == arcade.key.C:
+        elif keycode == pygame.K_c:
             self.cheat_mode_enabled = not self.cheat_mode_enabled
             if not self.cheat_mode_enabled:
                 self.player.is_invincible = False
-                self. ghosts_frozen = False
+                self.ghosts_frozen = False
                 self.player.speed_boost = False
             status = "ON" if self.cheat_mode_enabled else "OFF"
             print(f"[CHEAT MODE] {status}")
         elif self.cheat_mode_enabled:
-            self.handle_cheat_key(key)
+            self.handle_cheat_key(keycode)
 
     def handle_cheat_key(self, key: int) -> None:
         """
@@ -457,25 +499,25 @@ class GameView(arcade.View):
         Args:
             key (int): The pressed key code.
         """
-        if key == arcade.key.F1:
+        if key == pygame.K_F1:
             self.player.toggle_invincibility()
             status = "ON" if self.player.is_invincible else "OFF"
             print(f"[CHEAT] Invincibility: {status}")
 
-        elif key == arcade.key.F2:
+        elif key == pygame.K_F2:
             print("[CHEAT] Skipping level")
             self.handle_level_complete()
 
-        elif key == arcade.key.F3:
+        elif key == pygame.K_F3:
             self.ghosts_frozen = not self.ghosts_frozen
             status = "ON" if self.ghosts_frozen else "OFF"
             print(f"[CHEAT] Ghosts frozen: {status}")
 
-        elif key == arcade.key.F4:
+        elif key == pygame.K_F4:
             self.player.add_extra_life()
             print(f"[CHEAT] Extra life added. Lives: {self.player.lives}")
 
-        elif key == arcade.key.F5:
+        elif key == pygame.K_F5:
             self.player.toggle_speed_boost()
             status = "ON" if self.player.speed_boost else "OFF"
             print(f"[CHEAT] Speed boost: {status}")
