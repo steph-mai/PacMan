@@ -88,7 +88,7 @@ class MenuView(BaseView):
             self.selected_index = (self.selected_index + 1) % len(self.options)
         elif keycode == pygame.K_RETURN:
             if self.selected_index == 0:
-                from src.mlx_wrapper.game_view import GameView
+                from src.mlx_wrapper.playing.game_view import GameView
                 game_view = GameView(self.engine, self.config, self.manager)
                 self.manager.set_view(game_view)
             elif self.selected_index == 1:
