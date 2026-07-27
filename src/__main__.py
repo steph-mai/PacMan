@@ -21,7 +21,9 @@ def main() -> None:
         config_file = sys.argv[1]
         config = loader.config_file_load(config_file)
 
-        manager = GameManager(1280, 720, "PacMan")
+        pygame.display.init()
+        info = pygame.display.Info()
+        manager = GameManager(info.current_w, info.current_h, "PacMan")
 
         menu_view = MenuView(manager.engine, manager, config)
         manager.set_view(menu_view)

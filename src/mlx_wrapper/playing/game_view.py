@@ -78,9 +78,9 @@ class GameView(BaseView):
 
     def on_draw(self) -> None:
         """Render the current state of the game session."""
-        start_x_offset = (self.engine.screen.get_width() -
+        start_x_offset = (self.manager.width -
                           (self.session.cols * CELL_SIZE)) // 2
-        start_y_offset = (self.engine.screen.get_height() -
+        start_y_offset = (self.manager.height -
                           (self.session.rows * CELL_SIZE)) // 2
 
         for r in range(self.session.rows):
@@ -170,14 +170,14 @@ class GameView(BaseView):
         """Render the score, lives, and cheat mode status overlay."""
         text_color = (255, 255, 255)
         cheat_color = (100, 150, 255)
-        bottom_y = self.engine.screen.get_height()
+        bottom_y = self.manager.height
 
         self.engine.put_small_string(10,
-                                     bottom_y - 30,
+                                     bottom_y - 180,
                                      f"Score: {self.session.player.score}",
                                      text_color)
         self.engine.put_small_string(10,
-                                     bottom_y - 50,
+                                     bottom_y - 160,
                                      f"Lives: {self.session.player.lives}",
                                      text_color)
 
@@ -192,7 +192,10 @@ class GameView(BaseView):
 
             status = "CHEAT MODE: ON" + (" | " + " | ".join(cheats)
                                          if cheats else "")
-            self.engine.put_small_string(10, bottom_y - 70, status, text_color)
+            self.engine.put_small_string(10,
+                                         bottom_y - 140,
+                                         status,
+                                         text_color)
             self.engine.\
                 put_small_string(10, 10, "F1 Invincible | F2 Skip | F3 Freeze "
                                          "| F4 Life | F5 Speed", cheat_color)

@@ -51,29 +51,44 @@ class MenuView(BaseView):
         """
         self.engine.clear_screen((50, 50, 50))
 
-        self.engine.put_title_string(480, 200, "PAC-MAN", (255, 255, 0))
+        screen_width = self.manager.width
+        screen_height = self.manager.height
 
+        center_x = screen_width // 2
+
+        title_x = center_x - 120
+        title_y = int(screen_height * 0.15)
+        self.engine.put_title_string(title_x, title_y,
+                                     "PAC-MAN",
+                                     (255, 255, 0))
+
+        start_menu_y = int(screen_height * 0.25)
         for i, option in enumerate(self.options):
             color = (255, 0, 0) if i == self.selected_index \
                 else (255, 255, 255)
             prefix = "> " if i == self.selected_index else "  "
+            text = f"{prefix}{option}"
 
-            self.engine.put_string(530, 350 + (i * 50),
-                                   f"{prefix}{option}",
-                                   color)
+            option_x = center_x - 80
+            option_y = start_menu_y + (i * 60)
+            self.engine.put_string(option_x, option_y, text, color)
 
-        self.engine.put_string(900, 150, "TOP 10 SCORES", (255, 255, 0))
+        score_title_y = start_menu_y + 250
+        self.engine.put_title_string(center_x - 220, score_title_y,
+                                     "TOP 10 SCORES", (255, 255, 0))
 
         top_scores = self.score_manager.scores[:10]
 
         if not top_scores:
-            self.engine.put_small_string(900, 220, "No scores yet",
-                                         (200, 200, 200))
+            self.engine.put_string(center_x - 60, score_title_y + 150,
+                                   "No scores yet",
+                                   (200, 200, 200))
         else:
             for rank, entry in enumerate(top_scores, start=1):
                 row_text = f"{rank:>2}. {entry['name']:<10} {entry['score']}"
-                self.engine.put_small_string(900, 200 + (rank * 30), row_text,
-                                             (255, 255, 255))
+                row_y = score_title_y + 150 + (rank * 25)
+                self.engine.put_string(center_x - 90, row_y, row_text,
+                                       (255, 255, 255))
 
     def on_key_press(self, keycode: int) -> None:
         """
