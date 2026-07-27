@@ -38,17 +38,49 @@ class GameView(BaseView):
         self.config = config
         self.level_index = level_index
 
-        self.wall_img = self.engine.load_image("assets/wall.png")
-        self.player_img = self.engine.load_image("assets/player.png")
-        self.pacgum_img = self.engine.load_image("assets/pacgum.png")
+        self.wall_h_img = self.engine.load_image(
+            "inc/images/maze/horizontalwall.png")
+        self.wall_v_img = self.engine.load_image(
+            "inc/images/maze/verticalwall.png")
+        self.player_images = {
+            NORTH: [
+                self.engine.load_image("inc/images/pacman/pacman-up/1.png"),
+                self.engine.load_image("inc/images/pacman/pacman-up/2.png"),
+                self.engine.load_image("inc/images/pacman/pacman-up/3.png")
+            ],
+            EAST: [
+                self.engine.load_image("inc/images/pacman/pacman-right/1.png"),
+                self.engine.load_image("inc/images/pacman/pacman-right/2.png"),
+                self.engine.load_image("inc/images/pacman/pacman-right/3.png")
+            ],
+            SOUTH: [
+                self.engine.load_image("inc/images/pacman/pacman-down/1.png"),
+                self.engine.load_image("inc/images/pacman/pacman-down/2.png"),
+                self.engine.load_image("inc/images/pacman/pacman-down/3.png")
+            ],
+            WEST: [
+                self.engine.load_image("inc/images/pacman/pacman-left/1.png"),
+                self.engine.load_image("inc/images/pacman/pacman-left/2.png"),
+                self.engine.load_image("inc/images/pacman/pacman-left/3.png")
+            ]
+        }
+        self.player_anim_timer: float = 0.0
+        self.player_anim_frame: int = 0
+
+        self.pacgum_img = self.engine.load_image(
+            "inc/images/maze/other/dot.png")
         self.super_pacgum_img = self.engine.load_image(
-            "assets/super_pacgum.png")
-        self.ghost_img = self.engine.load_image("assets/ghost.png")
+            "inc/images/maze/other/strawberry.png")
+        self.blinky_img = self.engine.load_image(
+            "inc/images/ghosts/blinky.png")
+        self.inky_img = self.engine.load_image("inc/images/ghosts/inky.png")
+        self.pinky_img = self.engine.load_image("inc/images/ghosts/pinky.png")
+        self.clyde_img = self.engine.load_image("inc/images/ghosts/clyde.png")
         self.ghost_scared_img = self.engine.load_image(
-            "assets/ghost_scared.png")
-        self.ghost_flashing_img = self.engine.load_image(
-            "assets/ghost_flashing.png")
-        self.ghost_dead_img = self.engine.load_image("assets/ghost_dead.png")
+            "inc/images/ghosts/blue_ghost.png")
+        # self.ghost_flashing_img = self.engine.load_image(
+        #     "assets/ghost_flashing.png")
+        # self.ghost_dead_img = self.engine.load_image("assets/ghost_dead.png")
 
         safe_level_index = min(level_index, len(self.config.level) - 1)
         level_config = self.config.level[safe_level_index]
@@ -186,6 +218,11 @@ class GameView(BaseView):
         if self.is_game_over:
             return
 
+        self.player_anim_timer += delta_time
+        if self.player_anim_timer >= 0.1:
+            self.player_anim_timer = 0.0
+            self.player_anim_frame = (self.player_anim_frame + 1) % 3
+
         self.player.update_movement(delta_time, self.level.maze)
 
         if not self.ghosts_frozen:
@@ -220,12 +257,17 @@ class GameView(BaseView):
             if is_dead:
                 print(f"Game Over! Final Score: {self.player.score}")
                 self.is_game_over = True
-                # TODO adapter GameOverView
-                # self.manager.set_view(
-                #     GameOverView(
-                #         self.player.score,
-                #         self.config,
-                #         victory=False))
+
+                # Import local pour éviter les imports circulaires
+                from src.mlx_wrapper.game_over_view import GameOverView
+                game_over = GameOverView(
+                    self.engine,
+                    self.manager,
+                    self.player.score,
+                    self.config,
+                    victory=False
+                )
+                self.manager.set_view(game_over)
             else:
                 self.player.reset_position()
 
@@ -269,55 +311,18 @@ class GameView(BaseView):
                                  ghosts_frozen=self.ghosts_frozen)
             self.manager.set_view(next_view)
         else:
-
             print(f"Game Won! Final Score: {self.player.score}")
             self.is_game_over = True
 
-            # TODO adapter GameOverView
-            # self.manager.set_view(GameOverView(self.player.score, self.config, victory=True))
-
-    # PYGAME with img
-    # def on_draw(self) -> None:
-    #     """
-    #     Render the maze walls, the player object and the ghosts objects.
-    #     """
-    #     if self.is_game_over:
-    #         return
-    #     start_x_offset = ((self.engine.screen.get_width() - (
-    #         self.cols * CELL_SIZE)) // 2)
-    #     start_y_offset = ((self.engine.screen.get_height() - (
-    #         self.rows * CELL_SIZE)) // 2)
-
-    #     for r in range(self.rows):
-    #         for c in range(self.cols):
-    #             cell_value = self.level.maze[r][c]
-
-    #             x = start_x_offset + (c * CELL_SIZE)
-    #             y = start_y_offset + (r * CELL_SIZE)
-
-    #             if cell_value != 0:
-    #                 self.engine.draw_image(self.wall_img, x, y)
-
-    #     for r, c in self.pacgums:
-    #         x = start_x_offset + (c * CELL_SIZE)
-    #         y = start_y_offset + (r * CELL_SIZE)
-    #         self.engine.draw_image(self.pacgum_img, x, y)
-
-    #     for r, c in self.super_pacgums:
-    #         x = start_x_offset + (c * CELL_SIZE)
-    #         y = start_y_offset - (r * CELL_SIZE)
-    #         self.engine.draw_image(self.super_pacgum_img, x, y)
-
-    #     player_x = start_x_offset + (self.player.col * CELL_SIZE)
-    #     player_y = start_y_offset + (self.player.row * CELL_SIZE)
-    #     self.engine.draw_image(self.player_img, player_x, player_y)
-
-        # for ghost in self.ghosts:
-        #     ghost_x = start_x_offset + (ghost.col * CELL_SIZE)
-        #     ghost_y = start_y_offset + (ghost.row * CELL_SIZE)
-        #     self.engine.draw_image(self.ghost_img, ghost_x, ghost_y)
-
-        # self.draw_hud()
+            from src.mlx_wrapper.game_over_view import GameOverView
+            victory_view = GameOverView(
+                self.engine,
+                self.manager,
+                self.player.score,
+                self.config,
+                victory=True
+            )
+            self.manager.set_view(victory_view)
 
     def on_draw(self) -> None:
         """
@@ -326,15 +331,11 @@ class GameView(BaseView):
         if self.is_game_over:
             return
 
-        start_x_offset = (
-            (self.engine.screen.get_width() - (self.cols * CELL_SIZE)) // 2)
-        start_y_offset = (
-            (self.engine.screen.get_height() - (self.rows * CELL_SIZE)) // 2)
+        start_x_offset = ((self.engine.screen.get_width() - (
+            self.cols * CELL_SIZE)) // 2)
+        start_y_offset = ((self.engine.screen.get_height() - (
+            self.rows * CELL_SIZE)) // 2)
 
-        wall_color = (25, 25, 166)
-        thickness = 3
-
-        # TODO A remplacer par des méthodes autorisées
         for r in range(self.rows):
             for c in range(self.cols):
                 cell_value = self.level.maze[r][c]
@@ -343,83 +344,97 @@ class GameView(BaseView):
                 y = start_y_offset + (r * CELL_SIZE)
 
                 if cell_value & NORTH:
-                    self.engine.draw_line(
-                        x, y, x + CELL_SIZE, y, wall_color, thickness)
+                    self.engine.draw_image(self.wall_h_img, x, y)
 
                 if cell_value & SOUTH:
-                    self.engine.draw_line(
-                        x,
-                        y + CELL_SIZE,
-                        x + CELL_SIZE,
-                        y + CELL_SIZE,
-                        wall_color, thickness)
+                    self.engine.draw_image(self.wall_h_img, x, y + CELL_SIZE)
 
                 if cell_value & WEST:
-                    self.engine.draw_line(
-                        x, y, x, y + CELL_SIZE, wall_color, thickness)
+                    self.engine.draw_image(self.wall_v_img, x, y)
 
                 if cell_value & EAST:
-                    self.engine.draw_line(
-                        x + CELL_SIZE,
-                        y, x + CELL_SIZE,
-                        y + CELL_SIZE, wall_color,
-                        thickness)
+                    self.engine.draw_image(self.wall_v_img, x + CELL_SIZE, y)
 
         for r, c in self.pacgums:
-            center_x = start_x_offset + (c * CELL_SIZE) + (CELL_SIZE // 2)
-            center_y = start_y_offset + (r * CELL_SIZE) + (CELL_SIZE // 2)
-            self.engine.draw_circle(
-                center_x, center_y, CELL_SIZE // 6, (0, 150, 0))
+            x = start_x_offset + (c * CELL_SIZE)
+            y = start_y_offset + (r * CELL_SIZE)
+            offset_x = (CELL_SIZE - self.pacgum_img.get_width()) // 2
+            offset_y = (CELL_SIZE - self.pacgum_img.get_height()) // 2
+            self.engine.draw_image(self.pacgum_img, x + offset_x, y + offset_y)
 
         for r, c in self.super_pacgums:
-            center_x = start_x_offset + (c * CELL_SIZE) + (CELL_SIZE // 2)
-            center_y = start_y_offset + (r * CELL_SIZE) + (CELL_SIZE // 2)
-            self.engine.draw_circle(
-                center_x, center_y, CELL_SIZE // 3, (0, 255, 0))
+            x = start_x_offset + (c * CELL_SIZE)
+            y = start_y_offset + (r * CELL_SIZE)
+            offset_x = (CELL_SIZE - self.super_pacgum_img.get_width()) // 2
+            offset_y = (CELL_SIZE - self.super_pacgum_img.get_height()) // 2
+            self.engine.draw_image(self.super_pacgum_img,
+                                   x + offset_x, y + offset_y)
 
-        player_x = start_x_offset + (
-            self.player.col * CELL_SIZE) + (CELL_SIZE // 2)
-        player_y = start_y_offset + (
-            self.player.row * CELL_SIZE) + (CELL_SIZE // 2)
+        current_dir = self.player.current_direction
+        if current_dir not in self.player_images:
+            current_dir = EAST
 
-        player_color = (
-            255, 165, 0
-            ) if self.player.is_invincible else (255, 255, 0)
-        self.engine.draw_circle(
-            player_x, player_y, int(CELL_SIZE / 2.5), player_color)
+        current_player_img = self.player_images[
+            current_dir][self.player_anim_frame]
+
+        player_x = start_x_offset + (self.player.col * CELL_SIZE)
+        player_y = start_y_offset + (self.player.row * CELL_SIZE)
+
+        p_offset_x = (CELL_SIZE - current_player_img.get_width()) // 2
+        p_offset_y = (CELL_SIZE - current_player_img.get_height()) // 2
+
+        self.engine.draw_image(current_player_img,
+                               player_x + p_offset_x,
+                               player_y + p_offset_y)
 
         for ghost in self.ghosts:
-            ghost_x = start_x_offset + (
-                ghost.col * CELL_SIZE) + (CELL_SIZE // 2)
-            ghost_y = start_y_offset + (
-                ghost.row * CELL_SIZE) + (CELL_SIZE // 2)
+            ghost_x = start_x_offset + (ghost.col * CELL_SIZE)
+            ghost_y = start_y_offset + (ghost.row * CELL_SIZE)
 
+            if isinstance(ghost, ShadowGhost):
+                base_ghost_img = self.blinky_img
+            elif isinstance(ghost, BashfulGhost):
+                base_ghost_img = self.inky_img
+            elif isinstance(ghost, SpeedyGhost):
+                base_ghost_img = self.pinky_img
+            elif isinstance(ghost, PokeyGhost):
+                base_ghost_img = self.clyde_img
+            else:
+                base_ghost_img = self.blinky_img
+
+            current_ghost_img = base_ghost_img
+            is_visible = True
+
+            current_ghost_img = base_ghost_img
             if ghost.state == GhostState.RUNNING_AWAY:
                 if ghost.is_flashing():
                     if int(ghost.scared_timer * 4) % 2 == 0:
-                        display_color = (255, 255, 255)
+                        current_ghost_img = base_ghost_img
                     else:
-                        display_color = (0, 255, 255)
+                        current_ghost_img = self.ghost_scared_img
                 else:
-                    display_color = (0, 0, 255)
+                    current_ghost_img = self.ghost_scared_img
             elif ghost.state == GhostState.DEAD:
-                display_color = (100, 100, 100)
-            else:
-                display_color = ghost.color
+                if int(ghost.death_timer * 8) % 2 == 0:
+                    current_ghost_img = base_ghost_img
+                else:
+                    is_visible = False
 
-            self.engine.draw_circle(
-                ghost_x, ghost_y, int(CELL_SIZE / 2.5), display_color)
+            if is_visible:
+                g_offset_x = (CELL_SIZE - current_ghost_img.get_width()) // 2
+                g_offset_y = (CELL_SIZE - current_ghost_img.get_height()) // 2
+
+                self.engine.draw_image(current_ghost_img, ghost_x + g_offset_x,
+                                       ghost_y + g_offset_y)
 
         self.draw_hud()
 
     def draw_hud(self) -> None:
         """
-        Render the score, lives, and cheat mode status overlay. This
-        makes it easy for a reviewer to confirm each cheat's effect
-        without checking the console.
+        Render the score, lives, and cheat mode status overlay.
         """
-        text_color = (0, 0, 0)
-        cheat_mode_text_color = (25, 25, 166)
+        text_color = (255, 255, 255)
+        cheat_mode_text_color = (100, 150, 255)
         bottom_y = self.engine.screen.get_height()
 
         self.engine.put_string(

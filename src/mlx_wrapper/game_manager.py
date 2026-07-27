@@ -15,7 +15,7 @@ class GameManager():
         self.height = height
         self.title = title
         self.engine = MLXEngine()
-        self.window = self.engine.create_window(
+        self.engine.create_window(
             self.width, self.height, self.title)
         self.current_view: BaseView | None = None
         self.running: bool = True
@@ -36,7 +36,7 @@ class GameManager():
     def on_loop(self, delta_time: float) -> None:
         if self.current_view:
             self.current_view.on_update(delta_time)
-            self.engine.clear_screen()
+            self.engine.clear_screen(color=(0, 0, 0))
             self.current_view.on_draw()
             self.engine.render_frame()
 

@@ -1,28 +1,36 @@
-from src.mlx_wrapper.game_view import GameView
-from src.mlx_wrapper.game_manager import GameManager
-from src.utils.logger_setup import setup_logger
-from src.parsing.loader import Loader
 import sys
 import pygame
+from src.utils.logger_setup import setup_logger
+from src.parsing.loader import Loader
+from src.mlx_wrapper.game_manager import GameManager
+from src.mlx_wrapper.menu_view import MenuView
 
 
-def main():
+def main() -> None:
+    """
+    Main entry point for the Pac-Man game.
+    Initializes the engine, loads the configuration, and starts the menu.
+    """
     try:
         setup_logger()
         loader = Loader()
         if len(sys.argv) != 2:
             print("Usage: python3 pac-man.py <config_file.json>")
             sys.exit(1)
+
         config_file = sys.argv[1]
         config = loader.config_file_load(config_file)
 
         manager = GameManager(1280, 720, "PacMan")
-        game_view = GameView(manager.engine, config, manager)
-        manager.set_view(game_view)
+
+        # We start with the Menu View instead of the Game View
+        menu_view = MenuView(manager.engine, manager, config)
+        manager.set_view(menu_view)
+
         manager.run()
+
     except KeyboardInterrupt:
-        print("\n[!] Game aborted by user (Ctrl+C). "
-              "Shutting down...")
+        print("\n[!] Game aborted by user (Ctrl+C). Shutting down...")
         pygame.quit()
         sys.exit(130)
     except Exception as e:

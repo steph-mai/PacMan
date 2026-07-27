@@ -25,7 +25,7 @@ class MLXEngine:
         self.close_hook_function: Callable[[], None] | None = None
         self.loop_hook_function: Callable[[float], None] | None = None
 
-    def create_window(self, width: int, height: int, title: str):
+    def create_window(self, width: int, height: int, title: str) -> None:
         """Create a window with the given dimensions and title.
 
         Args:
@@ -45,7 +45,11 @@ class MLXEngine:
         pxarray = pygame.PixelArray(self.screen)
         return pxarray
 
-    def put_string(self, x: int, y: int, text: str, color: tuple) -> None:
+    def put_string(self,
+                   x: int,
+                   y: int,
+                   text: str,
+                   color: tuple[int, int, int]) -> None:
         """Render text at the specified screen coordinates.
 
         Args:
@@ -61,7 +65,9 @@ class MLXEngine:
         """Update the display to show the rendered frame."""
         pygame.display.flip()
 
-    def clear_screen(self, color=(255, 255, 255)) -> None:
+    def clear_screen(self,
+                     color: tuple[int, int, int] = (255, 255, 255)
+                     ) -> None:
         """Fill the screen with the specified background color.
 
         Args:
@@ -135,13 +141,3 @@ class MLXEngine:
                         self.key_hook_function(event.key)
             if self.loop_hook_function:
                 self.loop_hook_function(delta_time)
-
-    # ADD FOR TEST ONLY
-    def draw_rectangle(self, x: int, y: int, width: int, height: int, color: tuple[int, int, int]) -> None:
-        pygame.draw.rect(self.screen, color, (x, y, width, height))
-
-    def draw_circle(self, center_x: int, center_y: int, radius: int, color: tuple[int, int, int]) -> None:
-        pygame.draw.circle(self.screen, color, (center_x, center_y), radius)
-
-    def draw_line(self, start_x: int, start_y: int, end_x: int, end_y: int, color: tuple[int, int, int], thickness: int = 2) -> None:
-        pygame.draw.line(self.screen, color, (start_x, start_y), (end_x, end_y), thickness)
