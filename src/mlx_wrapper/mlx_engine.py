@@ -18,11 +18,15 @@ class MLXEngine:
 
     def __init__(self) -> None:
         """Initialize pygame and font (MLX-like font)."""
-        pygame.init()
-        self.titlefont = pygame.font.SysFont(None, 100)
-        self.font = pygame.font.SysFont(None, 40)
-        self.smallfont = pygame.font.SysFont(None, 24)
-        self.last_time = time.time()
+        try:
+            pygame.init()
+            self.titlefont = pygame.font.SysFont(None, 100)
+            self.font = pygame.font.SysFont(None, 40)
+            self.smallfont = pygame.font.SysFont(None, 24)
+            self.last_time = time.time()
+        except (pygame.error, RuntimeError) as e:
+            logger.error(f"Failed to initialize pygame engine: {e}")
+            raise
 
         self.key_hook_function: Callable[[int], None] | None = None
         self.close_hook_function: Callable[[], None] | None = None
@@ -36,11 +40,15 @@ class MLXEngine:
             height: Height of the window in pixels.
             title: Window title.
         """
-        self.screen = pygame.display.set_mode((width, height))
-        pygame.display.set_caption(title)
+        try:
+            self.screen = pygame.display.set_mode((width, height))
+            pygame.display.set_caption(title)
 
-        self.background_image = pygame.Surface((width, height))
-        self.background_image.fill((0, 0, 0))
+            self.background_image = pygame.Surface((width, height))
+            self.background_image.fill((0, 0, 0))
+        except (pygame.error, ValueError, TypeError) as e:
+            logger.error(f"Failed to create window: {e}")
+            raise
 
     def get_pixel_array(self) -> pygame.PixelArray:
         """Return a pixel array for direct pixel access.

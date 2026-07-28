@@ -1,3 +1,5 @@
+import logging
+
 import pygame
 import sys
 from src.mlx_wrapper.base_view import BaseView
@@ -5,6 +7,9 @@ from src.mlx_wrapper.mlx_engine import MLXEngine
 from src.mlx_wrapper.game_manager import GameManager
 from src.parsing.models import Config
 from src.utils.highscore import HighScoreManager
+
+
+logger = logging.getLogger("pacman")
 
 
 class MenuView(BaseView):
@@ -102,16 +107,23 @@ class MenuView(BaseView):
         elif keycode == pygame.K_DOWN:
             self.selected_index = (self.selected_index + 1) % len(self.options)
         elif keycode == pygame.K_RETURN:
-            if self.selected_index == 0:
-                from src.mlx_wrapper.playing.game_view import GameView
-                game_view = GameView(self.engine, self.config, self.manager)
-                self.manager.set_view(game_view)
-            elif self.selected_index == 1:
-                from src.mlx_wrapper.instruction_view import InstructionsView
-                instructions_view = InstructionsView(self.engine,
-                                                     self.manager,
-                                                     self.config)
-                self.manager.set_view(instructions_view)
-            elif self.selected_index == 2:
-                pygame.quit()
-                sys.exit(0)
+            try:
+                if self.selected_index == 0:
+                    from src.mlx_wrapper.playing.game_view import GameView
+                    game_view = GameView(self.engine, self.config,
+                                         self.manager)
+                    self.manager.set_view(game_view)
+                elif self.selected_index == 1:
+                    from src.mlx_wrapper.instruction_view import (
+                        InstructionsView)
+                    instructions_view = InstructionsView(self.engine,
+                                                         self.manager,
+                                                         self.config)
+                    self.manager.set_view(instructions_view)
+                elif self.selected_index == 2:
+                    pygame.quit()
+                    sys.exit(0)
+            except ImportError:
+                logger.exception("Failed to import view module.")
+            except (AttributeError, TypeError):
+                logger.exception("Failed to create or set view.")
