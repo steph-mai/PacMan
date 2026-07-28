@@ -85,8 +85,3 @@ class Loader:
                            f"{e.lineno}, col {e.colno}. "
                            f"Loading safe defaults.")
             return Config()
-
-        except Exception as e:
-            logger.warning(f"Configuration logic error ({e}). "
-                           f"Loading safe defaults.")
-            return Config()
