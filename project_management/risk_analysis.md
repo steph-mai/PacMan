@@ -23,20 +23,17 @@ This document identifies the technical, organizational, and architectural risks 
     2. Transitioned from a continuous event-checking loop (Polling) to a "Callbacks/Hooks" architecture (mlx_key_hook, mlx_loop_hook). Instead of constantly asking the system for inputs, functions are only executed when an event actually occurs, strictly mimicking how the MLX library operates.
     3.  Removed programmatic geometric drawing in favor of exclusive sprite rendering (simulating `mlx_put_image_to_window` via custom `draw_image`).
 
-### R2: Monolithic architecture ("God Object") **# TODO**
-*   **Description:** The main class (`GameView`) centralized business logic, level generation, collision handling, and rendering. This made the codebase increasingly difficult to maintain and debug.
-*   **Mitigation:**
-    1.  Applied the Single Responsibility Principle (SRP).
-    2.  Scheduled refactoring to extract rendering logic into a dedicated class (`GameRenderer`) and isolate game data into a state object (`GameState`).
+## R2: Monolithic architecture ("God Object")
+**Description:** The main class (`GameView`) initially centralized business logic, level generation, collision handling, entity updates, and rendering. This made the codebase increasingly difficult to maintain and debug.
+
+**Mitigation:**
+- Applied the Single Responsibility Principle (SRP) by completely decoupling responsibilities.
+- Extracted asset management and texture loading into a dedicated `AssetManager` class.
+- Isolated all business logic, maze management, entity states, and collision rules into a standalone `GameSession` class.
+- Streamlined `GameView` so that it focuses strictly on visual rendering.
 
 ### R3: CPU overload and framerate issues
 *   **Description:** Unlike the Arcade library, using a pure `while True` loop to simulate the `mlx_loop` behavior maxes out the CPU at 100%, causing hardware overheating and unpredictable game speeds.
 *   **Mitigation:**
     1.  Implemented a manual FPS limiter based on Delta Time calculations using the native `time.time()` module.
     2.  Utilized `time.sleep()` to pause the process briefly when the frame calculation finishes ahead of the target frame rate.
-
-### R4: Procedural maze generation failure
-*   **Description:** The external `MazeGenerator` algorithm can crash due to an invalid seed or generate an unresolvable level, potentially blocking the game launch.
-*   **Mitigation:**
-    1.  Isolated the procedural generation process within a `try/except` block.
-    2.  Implemented a fallback system that automatically loads hardcoded default levels if the generator fails, ensuring continuous playability.

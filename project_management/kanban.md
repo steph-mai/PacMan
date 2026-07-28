@@ -25,3 +25,12 @@ We used Trello and a Kanban board to manage the project, which helped us visuali
 
   <br>
 </div>
+
+**Example: J12**
+<div align="center">
+<br>
+  <img src="project_management_assets/kanban_pacman_28_07.png" alt="kanban" width="1200" />
+
+  <br>
+</div>
+

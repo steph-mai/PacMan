@@ -142,3 +142,37 @@
 - README: To be completed (# TODO markers added to indicate UI-related sections to finish).
 - Project management: Drafted risk_analysis.py and test_plan.py.
 
+
+## Day 11
+
+### qdecross
+
+- Display technology conversion from Arcade to low-level Pygame functions.
+
+    - Ghost animation and rendering fixes:
+Implemented ghost flashing at the end of the frightened state by toggling between their original color and the blue sprite image.,
+Added a Visible/Invisible blinking effect for ghosts in the "dead" state (GhostState.DEAD) by adjusting their death timer refresh frequency.,
+
+    - God Object Refactoring (GameView):
+Separated responsibilities to follow object-oriented design principles (MVC-inspired pattern):
+Created an AssetManager class dedicated to loading and storing images and sprites.
+Created a GameSession class to isolate all business logic, maze management, entities, and collisions.,
+Streamlined GameView to focus exclusively on visual rendering and keyboard input handling.,
+
+    - Dynamic resolution management:
+Implemented dynamic screen size detection in the entry point (pacman.py) using the MLX equivalent mlx_get_screen_size() based on pygame.display.Info().
+Adapted all text displays and menus (MenuView and GameOverView) to center automatically based on the actual window size.,
+
+    - Structure error resolution:
+Reorganized game view files into a new dedicated folder (src/mlx_wrapper/playing/).
+Updated Python import paths and resolved typing errors as well as linter tool checks (make lint-strict).
+
+## Day 12
+
+### qdecross
+
+- Project Packaging & Distribution:
+
+    - Packaged the entire Python game into a standalone executable using Pyinstaller.
+
+    - Uploaded and published the packaged build as an unlisted, free release on Itch.io.

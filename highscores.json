@@ -12,6 +12,10 @@
         "score": 1210
     },
     {
+        "name": "STEPH",
+        "score": 1160
+    },
+    {
         "name": "Steph",
         "score": 850
     },
@@ -33,10 +37,6 @@
     },
     {
         "name": "Enter Name",
-        "score": 220
-    },
-    {
-        "name": "steph\n",
         "score": 220
     }
 ]
