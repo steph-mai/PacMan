@@ -1,6 +1,7 @@
 import logging
 
 import pygame
+from src.parsing.models import Config
 from src.mlx_wrapper.base_view import BaseView
 from src.mlx_wrapper.mlx_engine import MLXEngine
 from src.mlx_wrapper.game_manager import GameManager
@@ -15,7 +16,7 @@ class PauseView(BaseView):
     """
 
     def __init__(self, engine: MLXEngine, manager: GameManager,
-                 previous_view: BaseView, config) -> None:
+                 previous_view: BaseView, config: Config) -> None:
         """Initialize the pause menu with reference to the active game view."""
         super().__init__(engine)
         self.manager = manager
