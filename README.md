@@ -29,8 +29,8 @@ This project delivers a modern Pac-Man experience with the following core featur
 - User Interface: The game features a polished UI with a Main Menu, an in-game HUD (displaying score, lives, and time), a Pause Menu, and a Game Over screen.
 - Highscores: A persistent highscore system saves and displays the top 10 player scores.
 - Testing Tools: A special cheat mode (including invincibility, level skip, and ghost freeze) is included to make peer reviews and testing easier.
-- Deployment: The final game is fully packaged and ready to be deployed on a public gaming platform like Steam or Itch.io. **TODO  precise platform**
-- **TODO  graphical library**
+- Deployment: The final game is fully packaged using Pyinstaller and ready to be deployed on Itch.io.
+- Custom Graphical Engine: The game utilizes a custom wrapper around Pygame (MLXEngine) designed to strictly emulate the behavior and limitations of the C-based MiniLibX (MLX) library.
 
 ## 🔵 Instructions
 
@@ -40,7 +40,7 @@ This project delivers a modern Pac-Man experience with the following core featur
 
 ### ✳️ Installation
 
-The project uses uv for dependency management and isolation. To set up the environment and install necessary packages (pydantic, flake8, mypy, pytest) **TODO  graphical library**:
+The project uses uv for dependency management and isolation. To set up the environment and install necessary packages (pydantic, flake8, mypy, pytest, pygame).
 
 ```bash
 # Install dependencies and create virtual environment
@@ -151,10 +151,11 @@ To ensure stability, the configuration model enforces strict boundaries. If a va
 * level_max_time: 90 (Clamped between 30 and 300 seconds).
 
 ## 🔵 Visual Representation Features
-**TODO  graphical library**:
 
-## 🔵 Resources
-**TODO  graphical library**:
+The game features a strict visual architecture to comply with the MiniLibX simulation constraints:
+- **Sprite Management:** An `AssetManager` pre-loads and caches all textures (walls, entities, pacgums) upon initialization to optimize rendering.
+- **MLX-Compliant Rendering:** The engine avoids high-level geometric drawing functions. Screen clearing is handled via a pre-filled background buffer rather than dynamic fills, strictly adhering to the MLX philosophy.
+- **Dynamic Centering:** The game dynamically calculates the user's screen resolution and automatically centers the maze, HUD, and menus, ensuring a clean and proportional display on any monitor.
 
 ## 🔵 Highscore
 
@@ -202,8 +203,7 @@ The game is programmed to safely place items and characters without crashing:
 The game is built using Python. It uses Object-Oriented Programming (OOP) to keep the code organized and easy to read.
 
 ### ✳️ Game Engine and Loop
-- **#TODO - Graphical Engine:**
-
+- **Graphical Engine (MLXEngine):** We built a custom wrapper over `pygame`. It exposes only rudimentary functions (like `put_string`, `draw_image`, and basic key hooking) to simulate the strict technical constraints of the 42 MiniLibX library.
 - **Time-Based Movement:** The game updates positions using `delta_time` (the exact time between frames). This ensures the player and ghosts move at the same speed on any computer, whether it is fast or slow.
 - **Grid System:** The maze is a grid. Characters move exactly from one cell's center to another, making collisions very precise.
 
@@ -231,9 +231,7 @@ The project is structured around a modular, Object-Oriented architecture. The co
 *   **Game Entities (`src.obj`):** Contains the core blueprints for the game objects. The `Level` class translates the raw maze matrix into navigable space. The `Player` and base `Ghost` classes manage their own coordinates, movement logic, and collision boundaries independently from the visual rendering.
 *   **Artificial Intelligence (`src.ai`):** Decoupled from the base entity logic. It includes the `GhostState` machine (handling transitions between CHASING, RUNNING_AWAY, and DEAD) and specific behavior classes (`SpeedyGhost`, `ShadowGhost`, `BashfulGhost`, `PokeyGhost`) that inherit from the base `Ghost` to apply their unique targeting algorithms.
 *   **Data Persistence (`src.utils`):** The `HighScoreManager` operates autonomously to read, sanitize, sort, and save player scores to a local JSON file, ensuring data integrity against corrupted or malicious inputs.
-*   **Graphical Interface & Engine:**
-
-`#TODO`
+*   **Graphical Interface & Engine (`src.mlx_wrapper`):** A custom `MLXEngine` handles the low-level rendering via Pygame[cite: 48]. The visual flow is managed by a `GameManager` (the controller) which routes inputs and rendering calls to various states inheriting from `BaseView` (e.g., `MenuView`, `GameView`, `GameOverView`).
 
 ### ✳️ High-Level Data Flow
 
@@ -273,7 +271,7 @@ To build this project, we relied on historical arcade design patterns and modern
 *   **Pac-Man Dossier (Jamey Pittman):** The definitive technical analysis of the original arcade game’s logic, ghost AI targeting, and maze topology. [https://www.gamedeveloper.com/design/the-pac-man-dossier]
 *   **Python Documentation (Official):** Primary reference for standard libraries and type hinting. Special emphasis was placed on the **`logging` module**.
 
-*   **# TODO** Graphical Library Documentation
+*   **Pygame Documentation:** Used exclusively as a low-level backend to build our custom MiniLibX wrapper, handling window creation, event polling, and basic surface blitting.
 
 ### ✳️ AI Usage
 Artificial Intelligence was used as a strategic support tool throughout the development lifecycle to enhance documentation and ensure code quality:
