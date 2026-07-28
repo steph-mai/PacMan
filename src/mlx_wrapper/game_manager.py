@@ -36,7 +36,7 @@ class GameManager():
     def on_loop(self, delta_time: float) -> None:
         if self.current_view:
             self.current_view.on_update(delta_time)
-            self.engine.clear_screen(color=(0, 0, 0))
+            self.engine.clear_screen()
             self.current_view.on_draw()
             self.engine.render_frame()
 

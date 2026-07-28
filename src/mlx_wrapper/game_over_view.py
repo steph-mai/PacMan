@@ -52,19 +52,34 @@ class GameOverView(BaseView):
         """
         Render the UI elements (titles and inputs).
         """
-        self.engine.clear_screen((50, 50, 50))
+        self.engine.clear_screen()
 
+        screen_width = self.manager.width
+        screen_height = self.manager.height
+
+        center_x = screen_width // 2
+
+        title_y = int(screen_height * 0.25)
         if self.victory:
-            self.engine.put_string(200, 150, "YOU WIN!", (0, 255, 0))
+            self.engine.put_title_string(center_x - 140, title_y,
+                                         "YOU WIN!", (0, 255, 0))
         else:
-            self.engine.put_string(200, 150, "GAME OVER", (255, 0, 0))
+            self.engine.put_title_string(center_x - 180, title_y,
+                                         "GAME OVER", (255, 0, 0))
 
-        self.engine.put_string(200, 220, f"Final Score: {self.final_score}",
+        score_y = title_y + 110
+        self.engine.put_string(center_x - 100, score_y,
+                               f"Final Score: {self.final_score}",
                                (255, 255, 255))
 
-        self.engine.put_string(200, 350, "Enter Name (Press ENTER to save):",
+        input_label_y = score_y + 70
+        self.engine.put_string(center_x - 220, input_label_y,
+                               "Enter Name (Press ENTER to save):",
                                (255, 255, 255))
-        self.engine.put_string(200, 400, self.player_name + "_", (255, 255, 0))
+
+        input_y = input_label_y + 50
+        self.engine.put_string(center_x - 60, input_y,
+                               self.player_name + "_", (255, 255, 0))
 
     def on_key_press(self, keycode: int) -> None:
         """

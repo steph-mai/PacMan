@@ -38,6 +38,9 @@ class MLXEngine:
         self.screen = pygame.display.set_mode((width, height))
         pygame.display.set_caption(title)
 
+        self.background_image = pygame.Surface((width, height))
+        self.background_image.fill((0, 0, 0))
+
     def get_pixel_array(self) -> pygame.PixelArray:
         """Return a pixel array for direct pixel access.
 
@@ -99,15 +102,13 @@ class MLXEngine:
         """Update the display to show the rendered frame."""
         pygame.display.flip()
 
-    def clear_screen(self,
-                     color: tuple[int, int, int] = (255, 255, 255)
-                     ) -> None:
+    def clear_screen(self) -> None:
         """Fill the screen with the specified background color.
 
         Args:
             color: RGB color tuple used to clear the screen.
         """
-        self.screen.fill(color)
+        self.screen.blit(self.background_image, (0, 0))
 
     def load_image(self, filepath: str) -> pygame.Surface:
         """Load an image from a file path and return a surface.
@@ -122,7 +123,7 @@ class MLXEngine:
             logger.warning(f"Cannot load image from {filepath}. Invalid path.")
         try:
             image = pygame.image.load(filepath)
-            return image.convert_alpha()
+            return image
         except FileNotFoundError as e:
             logger.error(
                 f"Failed to load image at {filepath}: {e}. Using fallback.")
