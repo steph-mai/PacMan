@@ -49,7 +49,7 @@ class MenuView(BaseView):
         """
         Render the menu view elements using the MLX engine text renderer.
         """
-        self.engine.clear_screen((50, 50, 50))
+        self.engine.clear_screen()
 
         screen_width = self.manager.width
         screen_height = self.manager.height

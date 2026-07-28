@@ -52,7 +52,7 @@ class GameOverView(BaseView):
         """
         Render the UI elements (titles and inputs).
         """
-        self.engine.clear_screen((50, 50, 50))
+        self.engine.clear_screen()
 
         screen_width = self.manager.width
         screen_height = self.manager.height

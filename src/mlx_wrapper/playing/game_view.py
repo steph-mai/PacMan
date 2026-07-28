@@ -11,6 +11,7 @@ from src.mlx_wrapper.playing.asset_manager import AssetManager
 from src.mlx_wrapper.playing.game_session import GameSession
 
 CELL_SIZE = 32
+ENTITY_SIZE = 16
 
 
 class GameView(BaseView):
@@ -103,15 +104,15 @@ class GameView(BaseView):
         for r, c in self.session.pacgums:
             x, y = start_x_offset + (c * CELL_SIZE), \
                 start_y_offset + (r * CELL_SIZE)
-            o_x = (CELL_SIZE - self.assets.pacgum_img.get_width()) // 2
-            o_y = (CELL_SIZE - self.assets.pacgum_img.get_height()) // 2
+            o_x = (CELL_SIZE - ENTITY_SIZE) // 2
+            o_y = (CELL_SIZE - ENTITY_SIZE) // 2
             self.engine.draw_image(self.assets.pacgum_img, x + o_x, y + o_y)
 
         for r, c in self.session.super_pacgums:
             x, y = start_x_offset + (c * CELL_SIZE), \
                 start_y_offset + (r * CELL_SIZE)
-            o_x = (CELL_SIZE - self.assets.super_pacgum_img.get_width()) // 2
-            o_y = (CELL_SIZE - self.assets.super_pacgum_img.get_height()) // 2
+            o_x = (CELL_SIZE - ENTITY_SIZE) // 2
+            o_y = (CELL_SIZE - ENTITY_SIZE) // 2
             self.engine.draw_image(self.assets.super_pacgum_img,
                                    x + o_x,
                                    y + o_y)
@@ -125,8 +126,8 @@ class GameView(BaseView):
         player_x = start_x_offset + (self.session.player.col * CELL_SIZE)
         player_y = start_y_offset + (self.session.player.row * CELL_SIZE)
 
-        p_offset_x = (CELL_SIZE - current_player_img.get_width()) // 2
-        p_offset_y = (CELL_SIZE - current_player_img.get_height()) // 2
+        p_offset_x = (CELL_SIZE - ENTITY_SIZE) // 2
+        p_offset_y = (CELL_SIZE - ENTITY_SIZE) // 2
         self.engine.draw_image(current_player_img,
                                player_x + p_offset_x,
                                player_y + p_offset_y)
@@ -158,8 +159,8 @@ class GameView(BaseView):
                     is_visible = False
 
             if is_visible:
-                g_o_x = (CELL_SIZE - current_ghost_img.get_width()) // 2
-                g_o_y = (CELL_SIZE - current_ghost_img.get_height()) // 2
+                g_o_x = (CELL_SIZE - ENTITY_SIZE) // 2
+                g_o_y = (CELL_SIZE - ENTITY_SIZE) // 2
                 self.engine.draw_image(current_ghost_img,
                                        ghost_x + g_o_x,
                                        ghost_y + g_o_y)
@@ -170,7 +171,16 @@ class GameView(BaseView):
         """Render the score, lives, and cheat mode status overlay."""
         text_color = (255, 255, 255)
         cheat_color = (100, 150, 255)
+        warning_color = (255, 50, 50)
         bottom_y = self.manager.height
+
+        current_time = max(0, int(self.session.time_remaining))
+        time_color = warning_color if current_time <= 10 else text_color
+
+        self.engine.put_small_string(10,
+                                     bottom_y - 200,
+                                     f"Time: {current_time}s",
+                                     time_color)
 
         self.engine.put_small_string(10,
                                      bottom_y - 180,

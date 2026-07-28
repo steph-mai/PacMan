@@ -32,6 +32,7 @@ class GameSession:
             ghosts_frozen (bool): Whether ghosts are currently frozen.
         """
         self.config = config
+        self.time_remaining: float = float(self.config.level_max_time)
         self.level_index = level_index
         self.is_game_over = False
         self.is_victory = False
@@ -122,6 +123,14 @@ class GameSession:
             delta_time (float): Time elapsed since the last update in seconds.
         """
         if self.is_game_over:
+            return
+
+        if not self.cheat_mode_enabled:
+            self.time_remaining -= delta_time
+        if self.time_remaining <= 0.0:
+            self.time_remaining = 0.0
+            self.is_game_over = True
+            self.is_victory = False
             return
 
         self.player_anim_timer += delta_time
