@@ -7,7 +7,7 @@ from src.obj.ghost import Ghost
 from src.ai.behaviors import SpeedyGhost, ShadowGhost, BashfulGhost, PokeyGhost
 from src.ai.states import GhostState
 from src.parsing.models import Config
-from mazegenerator import MazeGenerator  # type: ignore[import-untyped]
+from mazegenerator import MazeGenerator
 
 logger = logging.getLogger("pacman")
 
