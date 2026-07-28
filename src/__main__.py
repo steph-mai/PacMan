@@ -1,9 +1,24 @@
 import sys
+import os
 import pygame
 from src.utils.logger_setup import setup_logger
 from src.parsing.loader import Loader
 from src.mlx_wrapper.game_manager import GameManager
 from src.mlx_wrapper.menu_view import MenuView
+
+
+def get_config_path(filename: str = "config.json") -> str | None:
+    """
+    Récupère le chemin absolu du fichier de configuration.
+    Gère la compatibilité avec le dossier temporaire (_MEIPASS) de PyInstaller.
+    """
+    if len(sys.argv) == 2:
+        return sys.argv[1]
+
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, filename)
+
+    return None
 
 
 def main() -> None:
@@ -14,11 +29,11 @@ def main() -> None:
     try:
         setup_logger()
         loader = Loader()
-        if len(sys.argv) != 2:
+
+        config_file = get_config_path("config.json")
+        if not config_file:
             print("Usage: python3 pac-man.py <config_file.json>")
             sys.exit(1)
-
-        config_file = sys.argv[1]
         config = loader.config_file_load(config_file)
 
         pygame.display.init()

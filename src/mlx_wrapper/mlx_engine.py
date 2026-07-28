@@ -3,6 +3,7 @@ import pygame
 import time
 import logging
 import sys
+import os
 
 logger = logging.getLogger()
 
@@ -119,6 +120,8 @@ class MLXEngine:
         Returns:
             A pygame Surface converted with alpha transparency.
         """
+        if hasattr(sys, '_MEIPASS'):
+            filepath = os.path.join(sys._MEIPASS, filepath)
         if not filepath:
             logger.warning(f"Cannot load image from {filepath}. Invalid path.")
         try:
