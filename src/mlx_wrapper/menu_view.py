@@ -31,7 +31,7 @@ class MenuView(BaseView):
         self.manager: GameManager = manager
         self.config: Config = config
 
-        self.options: list[str] = ["Launch Game", "Quit"]
+        self.options: list[str] = ["Start Game", "Instructions", "Quit"]
         self.selected_index: int = 0
 
         self.score_manager = HighScoreManager()
@@ -107,5 +107,11 @@ class MenuView(BaseView):
                 game_view = GameView(self.engine, self.config, self.manager)
                 self.manager.set_view(game_view)
             elif self.selected_index == 1:
+                from src.mlx_wrapper.instruction_view import InstructionsView
+                instructions_view = InstructionsView(self.engine,
+                                                     self.manager,
+                                                     self.config)
+                self.manager.set_view(instructions_view)
+            elif self.selected_index == 2:
                 pygame.quit()
                 sys.exit(0)
