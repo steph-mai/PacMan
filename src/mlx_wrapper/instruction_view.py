@@ -1,8 +1,13 @@
+import logging
+
 import pygame
 from src.mlx_wrapper.base_view import BaseView
 from src.mlx_wrapper.mlx_engine import MLXEngine
 from src.mlx_wrapper.game_manager import GameManager
 from src.parsing.models import Config
+
+
+logger = logging.getLogger("pacman")
 
 
 class InstructionsView(BaseView):
@@ -91,6 +96,11 @@ class InstructionsView(BaseView):
             keycode (int): The integer code of the pressed key.
         """
         if keycode in (pygame.K_RETURN, pygame.K_ESCAPE):
-            from src.mlx_wrapper.menu_view import MenuView
-            menu_view = MenuView(self.engine, self.manager, self.config)
-            self.manager.set_view(menu_view)
+            try:
+                from src.mlx_wrapper.menu_view import MenuView
+                menu_view = MenuView(self.engine, self.manager, self.config)
+                self.manager.set_view(menu_view)
+            except ImportError:
+                logger.exception("Failed to import MenuView.")
+            except (AttributeError, TypeError):
+                logger.exception("Failed to create or set MenuView.")

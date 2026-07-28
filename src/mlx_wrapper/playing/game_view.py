@@ -1,3 +1,5 @@
+import logging
+
 import pygame
 from src.mlx_wrapper.base_view import BaseView
 from src.mlx_wrapper.mlx_engine import MLXEngine
@@ -9,6 +11,9 @@ from src.ai.behaviors import SpeedyGhost, ShadowGhost, BashfulGhost
 from src.ai.states import GhostState
 from src.mlx_wrapper.playing.asset_manager import AssetManager
 from src.mlx_wrapper.playing.game_session import GameSession
+
+
+logger = logging.getLogger("pacman")
 
 CELL_SIZE = 32
 ENTITY_SIZE = 16
@@ -44,38 +49,49 @@ class GameView(BaseView):
         Args:
             delta_time (float): Time elapsed since the last frame.
         """
-        self.session.update(delta_time)
+        try:
+            self.session.update(delta_time)
 
-        if self.session.is_game_over:
-            if self.session.is_victory:
-                self._handle_level_complete()
-            else:
-                from src.mlx_wrapper.game_over_view import GameOverView
-                game_over = GameOverView(
-                    self.engine, self.manager,
-                    self.session.player.score, self.config, victory=False
-                )
-                self.manager.set_view(game_over)
+            if self.session.is_game_over:
+                if self.session.is_victory:
+                    self._handle_level_complete()
+                else:
+                    from src.mlx_wrapper.game_over_view import GameOverView
+                    game_over = GameOverView(
+                        self.engine, self.manager,
+                        self.session.player.score, self.config, victory=False
+                    )
+                    self.manager.set_view(game_over)
+        except ImportError:
+            logger.exception("Failed to import GameOverView.")
+        except (AttributeError, TypeError):
+            logger.exception("Failed to update session or create " +
+                             "GameOverView.")
 
     def _handle_level_complete(self) -> None:
         """Handle transitioning to the next level
         or showing the victory screen."""
-        if self.session.level_index + 1 < len(self.config.level):
-            next_view = GameView(
-                self.engine, self.config, self.manager,
-                self.session.level_index + 1,
-                player=self.session.player,
-                cheat_mode_enabled=self.session.cheat_mode_enabled,
-                ghosts_frozen=self.session.ghosts_frozen
-            )
-            self.manager.set_view(next_view)
-        else:
-            from src.mlx_wrapper.game_over_view import GameOverView
-            victory_view = GameOverView(
-                self.engine, self.manager,
-                self.session.player.score, self.config, victory=True
-            )
-            self.manager.set_view(victory_view)
+        try:
+            if self.session.level_index + 1 < len(self.config.level):
+                next_view = GameView(
+                    self.engine, self.config, self.manager,
+                    self.session.level_index + 1,
+                    player=self.session.player,
+                    cheat_mode_enabled=self.session.cheat_mode_enabled,
+                    ghosts_frozen=self.session.ghosts_frozen
+                )
+                self.manager.set_view(next_view)
+            else:
+                from src.mlx_wrapper.game_over_view import GameOverView
+                victory_view = GameOverView(
+                    self.engine, self.manager,
+                    self.session.player.score, self.config, victory=True
+                )
+                self.manager.set_view(victory_view)
+        except ImportError:
+            logger.exception("Failed to import GameOverView or GameView.")
+        except (AttributeError, TypeError):
+            logger.exception("Failed to handle level completion.")
 
     def on_draw(self) -> None:
         """Render the current state of the game session."""
@@ -223,30 +239,35 @@ class GameView(BaseView):
         """
         Forward input commands to the player entity or cheat manager.
         """
-        if keycode in (pygame.K_UP, pygame.K_w):
-            self.session.player.queue_direction(NORTH)
-        elif keycode in (pygame.K_RIGHT, pygame.K_d):
-            self.session.player.queue_direction(EAST)
-        elif keycode in (pygame.K_DOWN, pygame.K_s):
-            self.session.player.queue_direction(SOUTH)
-        elif keycode in (pygame.K_LEFT, pygame.K_a):
-            self.session.player.queue_direction(WEST)
-        elif keycode == pygame.K_c:
-            self.session.cheat_mode_enabled = not \
-                self.session.cheat_mode_enabled
-            if not self.session.cheat_mode_enabled:
-                self.session.player.is_invincible = False
-                self.session.ghosts_frozen = False
-                self.session.player.speed_boost = False
-        elif self.session.cheat_mode_enabled:
-            self._handle_cheat_key(keycode)
-        elif keycode in (pygame.K_ESCAPE, pygame.K_p):
-            from src.mlx_wrapper.pause_view import PauseView
-            pause_view = PauseView(self.engine,
-                                   self.manager,
-                                   self,
-                                   self.config)
-            self.manager.set_view(pause_view)
+        try:
+            if keycode in (pygame.K_UP, pygame.K_w):
+                self.session.player.queue_direction(NORTH)
+            elif keycode in (pygame.K_RIGHT, pygame.K_d):
+                self.session.player.queue_direction(EAST)
+            elif keycode in (pygame.K_DOWN, pygame.K_s):
+                self.session.player.queue_direction(SOUTH)
+            elif keycode in (pygame.K_LEFT, pygame.K_a):
+                self.session.player.queue_direction(WEST)
+            elif keycode == pygame.K_c:
+                self.session.cheat_mode_enabled = not \
+                    self.session.cheat_mode_enabled
+                if not self.session.cheat_mode_enabled:
+                    self.session.player.is_invincible = False
+                    self.session.ghosts_frozen = False
+                    self.session.player.speed_boost = False
+            elif self.session.cheat_mode_enabled:
+                self._handle_cheat_key(keycode)
+            elif keycode in (pygame.K_ESCAPE, pygame.K_p):
+                from src.mlx_wrapper.pause_view import PauseView
+                pause_view = PauseView(self.engine,
+                                       self.manager,
+                                       self,
+                                       self.config)
+                self.manager.set_view(pause_view)
+        except ImportError:
+            logger.exception("Failed to import PauseView.")
+        except (AttributeError, TypeError):
+            logger.exception("Failed to handle input or create PauseView.")
 
     def _handle_cheat_key(self, key: int) -> None:
         """Apply the cheat corresponding to the pressed function key."""

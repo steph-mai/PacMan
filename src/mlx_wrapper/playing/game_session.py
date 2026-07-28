@@ -57,7 +57,7 @@ class GameSession:
                                     seed=current_seed)
             self.level = Level(mazegen.maze)
             self.maze = mazegen.maze
-        except Exception as e:
+        except (AttributeError, IndexError, TypeError, ValueError) as e:
             logger.error(f"External MazeGenerator crashed: {e}.")
             logger.error("Failed to load the level. Exiting game.")
             sys.exit(1)

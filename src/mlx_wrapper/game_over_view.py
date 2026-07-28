@@ -1,9 +1,14 @@
+import logging
+
 import pygame
 from src.mlx_wrapper.base_view import BaseView
 from src.mlx_wrapper.mlx_engine import MLXEngine
 from src.mlx_wrapper.game_manager import GameManager
 from src.utils.highscore import HighScoreManager
 from src.parsing.models import Config
+
+
+logger = logging.getLogger("pacman")
 
 
 class GameOverView(BaseView):
@@ -106,12 +111,17 @@ class GameOverView(BaseView):
         Process the inputted name, save the score, and switch back
         to the main menu.
         """
-        name_to_save = self.player_name if self.player_name.strip()\
-            else "Anonymous"
+        try:
+            name_to_save = self.player_name if self.player_name.strip()\
+                else "Anonymous"
 
-        self.score_manager.add_score(name_to_save, self.final_score)
-        print(f"Score saved for {name_to_save}: {self.final_score}")
+            self.score_manager.add_score(name_to_save, self.final_score)
+            print(f"Score saved for {name_to_save}: {self.final_score}")
 
-        from src.mlx_wrapper.menu_view import MenuView
-        menu_view = MenuView(self.engine, self.manager, self.config)
-        self.manager.set_view(menu_view)
+            from src.mlx_wrapper.menu_view import MenuView
+            menu_view = MenuView(self.engine, self.manager, self.config)
+            self.manager.set_view(menu_view)
+        except ImportError:
+            logger.exception("Failed to import MenuView.")
+        except (AttributeError, TypeError, IOError):
+            logger.exception("Failed to save score or set MenuView.")

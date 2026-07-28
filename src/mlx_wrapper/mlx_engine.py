@@ -53,11 +53,15 @@ class MLXEngine:
         Returns:
             None
         """
-        self.screen = pygame.display.set_mode((width, height))
-        pygame.display.set_caption(title)
+        try:
+            self.screen = pygame.display.set_mode((width, height))
+            pygame.display.set_caption(title)
 
-        self.background_image = pygame.Surface((width, height))
-        self.background_image.fill((0, 0, 0))
+            self.background_image = pygame.Surface((width, height))
+            self.background_image.fill((0, 0, 0))
+        except (pygame.error, ValueError, TypeError) as e:
+            logger.error(f"Failed to create window: {e}")
+            raise
 
     def put_string(self,
                    x: int,
