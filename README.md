@@ -213,12 +213,13 @@ The game is built using Python. It uses Object-Oriented Programming (OOP) to kee
 
 ### ✳️ Entity Logic and AI
 - **Object-Oriented Design:** The player and the ghosts are separate objects. They have their own classes (`Player` and `Ghost`) that manage their specific speed, score, and position.
-- **Ghost State Machine:** The ghosts use a "State Machine" to know how to behave. They smoothly switch between three states: `CHASING` (hunting the player), `RUNNING_AWAY` (moving away when a Super Pacgum is eaten), and `DEAD` (returning to their spawn point).
+- **Ghost State Machine:** The ghosts use a "State Machine" combined with a global phase cycle to govern their behavior. They periodically alternate between **SCATTER** (patrol mode, where each ghost retreats to its designated corner of the maze) and **CHASING** (hunting the player). They can also dynamically switch to **RUNNING_AWAY** (scared mode when a Super Pacgum is eaten) and **DEAD** (returning to their spawn point).
 - **Historical AI Behaviors:** The targeting algorithms were built to closely approximate the historical rules of the original arcade game. Each ghost has its own specific strategy:
 - **Shadow (Blinky / Red):** Directly targets the player's exact current cell.
 - **Speedy (Pinky / Pink):** Tries to cut off the player by targeting the cell exactly **4 spaces ahead** of the player's current direction.
 - **Bashful (Inky / Cyan):** Uses a flanking strategy by targeting the cell exactly **4 spaces behind** the player.
 - **Pokey (Clyde / Orange):** Chases the player directly until it gets too close (within an **8-space radius**), then abandons the chase and retreats to its assigned corner.
+
 
 ## 🔵 General Software Architecture
 

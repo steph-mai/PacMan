@@ -10,7 +10,6 @@ authors = [
 
 dependencies = [
     "pydantic",
-    "arcade",
     "mazegenerator",
     "pygame",
     "pyinstaller>=6.21.0",

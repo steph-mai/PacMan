@@ -176,3 +176,17 @@ Updated Python import paths and resolved typing errors as well as linter tool ch
     - Packaged the entire Python game into a standalone executable using Pyinstaller.
 
     - Uploaded and published the packaged build as an unlisted, free release on Itch.io.
+
+## Day 13
+
+### qdecross, stmaire
+
+- Testing and Code Check:
+
+    - Tested the game thoroughly to make sure everything works without bugs.
+
+    - Checked all features against the project rules to ensure full compliance.
+
+- Peer Review:
+
+    - Worked with another student to review the code, check the project structure, and validate the game mechanics.
