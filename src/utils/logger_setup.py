@@ -21,12 +21,8 @@ def setup_logger() -> None:
     logging.basicConfig(
         level=logging.WARNING,
         format="%(asctime)s | %(levelname)-8s | %(message)s",
-        # -8s: force le levelname (niveau de sécurité) à occuper 8 caractères,
-        # pour que les | soient alignés dans les logs.
         datefmt="%Y-%m-%d %H:%M:%S",
         force=True,
-        # si une autre lib(arcade, mazegen) a déjà appelé BasicConfig,
-        # prendra en compte cette config
         handlers=[
             logging.FileHandler("pacman.log", mode="a", encoding="utf-8"),
             logging.StreamHandler()

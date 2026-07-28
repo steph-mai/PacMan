@@ -1,3 +1,9 @@
+"""
+Main entry point for the PacMan application.
+
+This module initializes logging, loads configuration, creates the game
+window, and starts the main menu view.
+"""
 import sys
 import os
 import pygame
@@ -8,9 +14,17 @@ from src.mlx_wrapper.menu_view import MenuView
 
 
 def get_config_path(filename: str = "config.json") -> str | None:
-    """
-    Récupère le chemin absolu du fichier de configuration.
-    Gère la compatibilité avec le dossier temporaire (_MEIPASS) de PyInstaller.
+    """Return the configuration file path.
+
+    This function supports passing the config path as a command line
+    argument and resolves the path when running from a PyInstaller
+    bundle.
+
+    Args:
+        filename: Default configuration filename.
+
+    Returns:
+        The resolved configuration file path or None if no file was found.
     """
     if len(sys.argv) == 2:
         return sys.argv[1]
@@ -22,9 +36,13 @@ def get_config_path(filename: str = "config.json") -> str | None:
 
 
 def main() -> None:
-    """
-    Main entry point for the Pac-Man game.
-    Initializes the engine, loads the configuration, and starts the menu.
+    """Run the PacMan application.
+
+    Initializes logging, loads the configuration, creates the game manager,
+    and launches the main menu.
+
+    Returns:
+        None
     """
     try:
         setup_logger()
