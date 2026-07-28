@@ -177,11 +177,16 @@ class GameView(BaseView):
         current_time = max(0, int(self.session.time_remaining))
         time_color = warning_color if current_time <= 10 else text_color
 
+        current_lvl = self.session.level_index + 1
+        total_lvls = len(self.config.level)
+        self.engine.put_small_string(10,
+                                     bottom_y - 220,
+                                     f"Level: {current_lvl}/{total_lvls}",
+                                     text_color)
         self.engine.put_small_string(10,
                                      bottom_y - 200,
                                      f"Time: {current_time}s",
                                      time_color)
-
         self.engine.put_small_string(10,
                                      bottom_y - 180,
                                      f"Score: {self.session.player.score}",
@@ -235,6 +240,13 @@ class GameView(BaseView):
                 self.session.player.speed_boost = False
         elif self.session.cheat_mode_enabled:
             self._handle_cheat_key(keycode)
+        elif keycode in (pygame.K_ESCAPE, pygame.K_p):
+            from src.mlx_wrapper.pause_view import PauseView
+            pause_view = PauseView(self.engine,
+                                   self.manager,
+                                   self,
+                                   self.config)
+            self.manager.set_view(pause_view)
 
     def _handle_cheat_key(self, key: int) -> None:
         """Apply the cheat corresponding to the pressed function key."""
