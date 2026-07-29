@@ -122,3 +122,4 @@ class HighScoreManager:
                 json.dump(self.scores, file, indent=4)
         except IOError as e:
             logger.error(f"Error saving highscores to disk: {e}")
+            raise IOError
