@@ -66,7 +66,7 @@ class GameView(BaseView):
             logger.error("Failed to import GameOverView.")
         except (AttributeError, TypeError):
             logger.error("Failed to update session or create " +
-                             "GameOverView.")
+                         "GameOverView.")
 
     def _handle_level_complete(self) -> None:
         """Handle transitioning to the next level
@@ -195,19 +195,19 @@ class GameView(BaseView):
 
         current_lvl = self.session.level_index + 1
         total_lvls = len(self.config.level)
-        self.engine.put_small_string(10,
+        self.engine.put_small_string(100,
                                      bottom_y - 220,
                                      f"Level: {current_lvl}/{total_lvls}",
                                      text_color)
-        self.engine.put_small_string(10,
+        self.engine.put_small_string(100,
                                      bottom_y - 200,
                                      f"Time: {current_time}s",
                                      time_color)
-        self.engine.put_small_string(10,
+        self.engine.put_small_string(100,
                                      bottom_y - 180,
                                      f"Score: {self.session.player.score}",
                                      text_color)
-        self.engine.put_small_string(10,
+        self.engine.put_small_string(100,
                                      bottom_y - 160,
                                      f"Lives: {self.session.player.lives}",
                                      text_color)
@@ -223,15 +223,15 @@ class GameView(BaseView):
 
             status = "CHEAT MODE: ON" + (" | " + " | ".join(cheats)
                                          if cheats else "")
-            self.engine.put_small_string(10,
+            self.engine.put_small_string(100,
                                          bottom_y - 140,
                                          status,
                                          text_color)
             self.engine.\
-                put_small_string(10, 10, "F1 Invincible | F2 Skip | F3 Freeze "
-                                         "| F4 Life | F5 Speed", cheat_color)
+                put_small_string(100, 10, "F1 Invincible | F2 Skip | F3 Freeze"
+                                          " | F4 Life | F5 Speed", cheat_color)
         else:
-            self.engine.put_small_string(10, 10,
+            self.engine.put_small_string(100, 10,
                                          "Press C for Cheat Mode",
                                          cheat_color)
 
