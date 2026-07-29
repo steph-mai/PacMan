@@ -51,37 +51,37 @@ class InstructionsView(BaseView):
         self.engine.put_title_string(center_x - 250, 50, "INSTRUCTIONS",
                                      (255, 255, 0))
 
-        self.engine.put_string(center_x - 300, 150, "RULES:", (255, 100, 100))
-        self.engine.put_small_string(center_x - 280, 190,
+        self.engine.put_string(center_x - 250, 200, "RULES:", (255, 100, 100))
+        self.engine.put_small_string(center_x - 200, 240,
                                      "- Eat all pacgums to win the level.",
                                      (255, 255, 255))
-        self.engine.put_small_string(center_x - 280, 220,
+        self.engine.put_small_string(center_x - 200, 270,
                                      "- Avoid ghosts or you will lose a life.",
                                      (255, 255, 255))
-        self.engine.put_small_string(center_x - 280, 250,
+        self.engine.put_small_string(center_x - 200, 300,
                                      "- Super-pacgums make ghosts edible.",
                                      (255, 255, 255))
 
-        self.engine.put_string(center_x - 300, 320, "CONTROLS:",
+        self.engine.put_string(center_x - 250, 370, "CONTROLS:",
                                (100, 255, 100))
-        self.engine.put_small_string(center_x - 280, 360,
+        self.engine.put_small_string(center_x - 200, 410,
                                      "- Arrows / WASD : Move Pac-Man",
                                      (255, 255, 255))
-        self.engine.put_small_string(center_x - 280, 390,
+        self.engine.put_small_string(center_x - 200, 440,
                                      "- P / ESC : Pause game",
                                      (255, 255, 255))
 
-        self.engine.put_string(center_x - 300, 460,
+        self.engine.put_string(center_x - 250, 510,
                                "CHEAT MODE:", (100, 150, 255))
-        self.engine.put_small_string(center_x - 280, 500,
+        self.engine.put_small_string(center_x - 200, 550,
                                      "- Press 'C' in-game "
                                      "to toggle Cheat Mode",
                                      (255, 255, 255))
-        self.engine.put_small_string(center_x - 280, 530,
+        self.engine.put_small_string(center_x - 200, 580,
                                      "- F1: Invincible | F2: Skip Level "
                                      "| F3: Freeze Ghosts",
                                      (255, 255, 255))
-        self.engine.put_small_string(center_x - 280, 560,
+        self.engine.put_small_string(center_x - 200, 610,
                                      "- F4: Extra Life | F5: Speed Boost",
                                      (255, 255, 255))
 

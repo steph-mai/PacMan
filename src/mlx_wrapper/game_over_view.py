@@ -113,7 +113,7 @@ class GameOverView(BaseView):
         """
         try:
             name_to_save = self.player_name if self.player_name.strip()\
-                else "Anonymous"
+                else "ANONYMOUS"
 
             self.score_manager.add_score(name_to_save, self.final_score)
             print(f"Score saved for {name_to_save}: {self.final_score}")

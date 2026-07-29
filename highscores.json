@@ -1,5 +1,13 @@
 [
     {
+        "name": "Anonymous",
+        "score": 1880
+    },
+    {
+        "name": "QUENTIN",
+        "score": 1460
+    },
+    {
         "name": "qdecross",
         "score": 1240
     },
@@ -30,13 +38,5 @@
     {
         "name": "TESQD",
         "score": 470
-    },
-    {
-        "name": "Enter Name",
-        "score": 330
-    },
-    {
-        "name": "Enter Name",
-        "score": 220
     }
 ]
