@@ -58,6 +58,13 @@ class HighScoreManager:
                                 f"({score_val}) for '{item.get('name')}'.")
                             continue
 
+                        if score_val > 999999:
+                            logger.warning(
+                                f"Highscore cheat detected: impossibly high "
+                                f"({score_val}) for '{item.get('name')}'."
+                                " Clamped to 999999")
+                            score_val = 999999
+
                         raw_name = str(item["name"])
                         safe_name = "".join(
                             c for c in raw_name
