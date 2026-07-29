@@ -1,4 +1,4 @@
-from mazegenerator import MazeGenerator  # type: ignore[import-untyped]
+from mazegenerator import MazeGenerator
 
 
 def test_maze_dimensions() -> None:
