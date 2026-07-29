@@ -63,9 +63,9 @@ class GameView(BaseView):
                     )
                     self.manager.set_view(game_over)
         except ImportError:
-            logger.exception("Failed to import GameOverView.")
+            logger.error("Failed to import GameOverView.")
         except (AttributeError, TypeError):
-            logger.exception("Failed to update session or create " +
+            logger.error("Failed to update session or create " +
                              "GameOverView.")
 
     def _handle_level_complete(self) -> None:
@@ -89,9 +89,9 @@ class GameView(BaseView):
                 )
                 self.manager.set_view(victory_view)
         except ImportError:
-            logger.exception("Failed to import GameOverView or GameView.")
+            logger.error("Failed to import GameOverView or GameView.")
         except (AttributeError, TypeError):
-            logger.exception("Failed to handle level completion.")
+            logger.error("Failed to handle level completion.")
 
     def on_draw(self) -> None:
         """Render the current state of the game session."""
@@ -265,9 +265,9 @@ class GameView(BaseView):
                                        self.config)
                 self.manager.set_view(pause_view)
         except ImportError:
-            logger.exception("Failed to import PauseView.")
+            logger.error("Failed to import PauseView.")
         except (AttributeError, TypeError):
-            logger.exception("Failed to handle input or create PauseView.")
+            logger.error("Failed to handle input or create PauseView.")
 
     def _handle_cheat_key(self, key: int) -> None:
         """Apply the cheat corresponding to the pressed function key."""

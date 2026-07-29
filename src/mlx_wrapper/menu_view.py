@@ -124,6 +124,6 @@ class MenuView(BaseView):
                     pygame.quit()
                     sys.exit(0)
             except ImportError:
-                logger.exception("Failed to import view module.")
+                logger.error("Failed to import view module.")
             except (AttributeError, TypeError):
-                logger.exception("Failed to create or set view.")
+                logger.error("Failed to create or set view.")

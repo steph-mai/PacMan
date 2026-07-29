@@ -101,6 +101,6 @@ class InstructionsView(BaseView):
                 menu_view = MenuView(self.engine, self.manager, self.config)
                 self.manager.set_view(menu_view)
             except ImportError:
-                logger.exception("Failed to import MenuView.")
+                logger.error("Failed to import MenuView.")
             except (AttributeError, TypeError):
-                logger.exception("Failed to create or set MenuView.")
+                logger.error("Failed to create or set MenuView.")

@@ -67,14 +67,14 @@ class PauseView(BaseView):
                 self.engine.put_string(center_x - 100, center_y + (i * 50),
                                        f"{prefix}{option}", color)
         except (AttributeError, TypeError, pygame.error):
-            logger.exception("Failed to render pause view.")
+            logger.error("Failed to render pause view.")
 
     def _return_to_previous_view(self) -> None:
         """Safely restore the previous view."""
         try:
             self.manager.set_view(self.previous_view)
         except (AttributeError, TypeError):
-            logger.exception("Failed to restore the previous view.")
+            logger.error("Failed to restore the previous view.")
 
     def on_key_press(self, keycode: int) -> None:
         """Handle menu navigation and selection during pause.
@@ -99,8 +99,8 @@ class PauseView(BaseView):
             elif keycode in (pygame.K_ESCAPE, pygame.K_p):
                 self._return_to_previous_view()
         except ImportError:
-            logger.exception("Failed to import the main menu view.")
+            logger.error("Failed to import the main menu view.")
             self._return_to_previous_view()
         except (AttributeError, TypeError, pygame.error):
-            logger.exception("Unexpected error while handling pause input.")
+            logger.error("Unexpected error while handling pause input.")
             self._return_to_previous_view()
