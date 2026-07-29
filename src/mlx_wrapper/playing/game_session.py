@@ -48,8 +48,11 @@ class GameSession:
         self.cols = level_config.width
         self.rows = level_config.height
 
-        current_seed = self.config.seed if self.level_index == 0 \
-            else random.randint(1, 9999999)
+        if self.level_index == 0:
+            current_seed = self.config.seed
+        else:
+            random.seed(None)
+            current_seed = random.randint(1, 9999999)
 
         try:
             mazegen = MazeGenerator(size=(self.cols, self.rows),
