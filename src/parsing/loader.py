@@ -73,7 +73,9 @@ class Loader:
                 k for k, v in key_count.items() if v > 1)
 
             if len(duplicate_keys) != 0:
-                logging.warning("Duplicate keys in config file")
+                logging.warning(
+                    "Duplicate keys in config file. "
+                    "The last value entered is taken into account.")
 
         def _validate_data(list_of_pairs: list[tuple[str, Any]]
                            ) -> dict[str, str | int]:
