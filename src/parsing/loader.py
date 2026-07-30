@@ -9,6 +9,7 @@ and ignores comments in the configuration file.
 import json
 import logging
 import collections
+from typing import Any
 from pathlib import Path
 from src.parsing.models import Config
 
@@ -65,7 +66,8 @@ class Loader:
                            "Loading safe defaults.")
             return Config()
 
-        def _detect_duplicate_keys(list_of_pairs):
+        def _detect_duplicate_keys(
+                list_of_pairs: list[tuple[str, Any]]) -> None:
             key_count = collections.Counter(k for k, v in list_of_pairs)
             duplicate_keys = ', '.join(
                 k for k, v in key_count.items() if v > 1)
@@ -73,7 +75,8 @@ class Loader:
             if len(duplicate_keys) != 0:
                 logging.warning("Duplicate keys in config file")
 
-        def _validate_data(list_of_pairs):
+        def _validate_data(list_of_pairs: list[tuple[str, Any]]
+                           ) -> dict[str, str | int]:
             _detect_duplicate_keys(list_of_pairs)
             return dict(list_of_pairs)
 
