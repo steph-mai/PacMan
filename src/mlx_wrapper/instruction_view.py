@@ -53,40 +53,40 @@ class InstructionsView(BaseView):
 
         self.engine.put_string(center_x - 250, 200, "RULES:", (255, 100, 100))
         self.engine.put_small_string(center_x - 200, 240,
-                                     "- Eat all pacgums to win the level.",
+                                     "- EAT ALL PACGUM TO COMPLETE THE LEVEL.",
                                      (255, 255, 255))
         self.engine.put_small_string(center_x - 200, 270,
-                                     "- Avoid ghosts or you will lose a life.",
+                                     "- AVOID GHOSTS OR YOU WILL LOSE A LIFE.",
                                      (255, 255, 255))
         self.engine.put_small_string(center_x - 200, 300,
-                                     "- Super-pacgums make ghosts edible.",
+                                     "- SUPER PAC-GUM MAKE GHOSTS EDIBLES.",
                                      (255, 255, 255))
 
         self.engine.put_string(center_x - 250, 370, "CONTROLS:",
                                (100, 255, 100))
         self.engine.put_small_string(center_x - 200, 410,
-                                     "- Arrows / WASD : Move Pac-Man",
+                                     "- ARROWA / WASD : MOVE PAC-MAN",
                                      (255, 255, 255))
         self.engine.put_small_string(center_x - 200, 440,
-                                     "- P / ESC : Pause game",
+                                     "- P / ESC : PAUSE GAME",
                                      (255, 255, 255))
 
         self.engine.put_string(center_x - 250, 510,
                                "CHEAT MODE:", (100, 150, 255))
         self.engine.put_small_string(center_x - 200, 550,
-                                     "- Press 'C' in-game "
-                                     "to toggle Cheat Mode",
+                                     "- PRESS 'C' IN-GAME "
+                                     "TO TOGGLE CHEAT MODE",
                                      (255, 255, 255))
         self.engine.put_small_string(center_x - 200, 580,
-                                     "- F1: Invincible | F2: Skip Level "
-                                     "| F3: Freeze Ghosts",
+                                     "- F1: INVINCIBLE | F2: SKIP LEVEL "
+                                     "| F3: FREEZE GHOSTS",
                                      (255, 255, 255))
         self.engine.put_small_string(center_x - 200, 610,
-                                     "- F4: Extra Life | F5: Speed Boost",
+                                     "- F4: EXTRA LIFE | F5: SPEED BOOST",
                                      (255, 255, 255))
 
         self.engine.put_string(center_x - 150, self.manager.height - 150,
-                               "Press ENTER to return", (255, 255, 0))
+                               "PRESS 'ENTER' TO RETURN", (255, 255, 0))
 
     def on_key_press(self, keycode: int) -> None:
         """

@@ -197,19 +197,19 @@ class GameView(BaseView):
         total_lvls = len(self.config.level)
         self.engine.put_small_string(100,
                                      bottom_y - 220,
-                                     f"Level: {current_lvl}/{total_lvls}",
+                                     f"LEVEL: {current_lvl}/{total_lvls}",
                                      text_color)
         self.engine.put_small_string(100,
                                      bottom_y - 200,
-                                     f"Time: {current_time}s",
+                                     f"TIME: {current_time}s",
                                      time_color)
         self.engine.put_small_string(100,
                                      bottom_y - 180,
-                                     f"Score: {self.session.player.score}",
+                                     f"SCORE: {self.session.player.score}",
                                      text_color)
         self.engine.put_small_string(100,
                                      bottom_y - 160,
-                                     f"Lives: {self.session.player.lives}",
+                                     f"LIVES: {self.session.player.lives}",
                                      text_color)
 
         if self.session.cheat_mode_enabled:
@@ -228,11 +228,11 @@ class GameView(BaseView):
                                          status,
                                          text_color)
             self.engine.\
-                put_small_string(100, 10, "F1 Invincible | F2 Skip | F3 Freeze"
-                                          " | F4 Life | F5 Speed", cheat_color)
+                put_small_string(100, 10, "F1 INVINCIBLE | F2 SKIP | F3 FREEZE"
+                                          " | F4 LIFE | F5 SPEED", cheat_color)
         else:
             self.engine.put_small_string(100, 10,
-                                         "Press C for Cheat Mode",
+                                         "PRESS C FOR CHEAT MODE",
                                          cheat_color)
 
     def on_key_press(self, keycode: int) -> None:
