@@ -150,7 +150,7 @@ To ensure stability, the configuration model enforces strict boundaries. If a va
 
 * level_max_time: 90 (Clamped between 30 and 300 seconds).
 
-## 🔵 Visual Representation Features
+### ✳️ Visual Representation Features
 
 The game features a strict visual architecture to comply with the MiniLibX simulation constraints:
 - **Sprite Management:** An `AssetManager` pre-loads and caches all textures (walls, entities, pacgums) upon initialization to optimize rendering.
