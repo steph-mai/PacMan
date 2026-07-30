@@ -66,8 +66,9 @@ class Loader:
             return Config()
 
         def _detect_duplicate_keys(list_of_pairs):
-            key_count = collections.Counter(k for k,v in list_of_pairs)
-            duplicate_keys = ', '.join(k for k,v in key_count.items() if v>1)
+            key_count = collections.Counter(k for k, v in list_of_pairs)
+            duplicate_keys = ', '.join(
+                k for k, v in key_count.items() if v > 1)
 
             if len(duplicate_keys) != 0:
                 logging.warning("Duplicate keys in config file")
