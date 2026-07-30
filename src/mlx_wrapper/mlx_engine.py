@@ -160,12 +160,11 @@ class MLXEngine:
         try:
             image = pygame.image.load(filepath)
             return image
-        except FileNotFoundError as e:
+        except (FileNotFoundError, PermissionError) as e:
             logger.error(
-                f"Failed to load image at {filepath}: {e}. Using fallback.")
-            fallback_image: pygame.Surface = pygame.Surface((32, 32))
-            fallback_image.fill((255, 0, 255))
-            return fallback_image
+                f"Failed to load image at {filepath}: {e}. "
+                "Verify game files integrity")
+            sys.exit(1)
 
     def draw_image(self, image: pygame.Surface, x: int, y: int) -> None:
         """Draw a surface onto the screen at the given coordinates.
