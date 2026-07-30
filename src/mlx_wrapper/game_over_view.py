@@ -123,5 +123,9 @@ class GameOverView(BaseView):
             self.manager.set_view(menu_view)
         except ImportError:
             logger.error("Failed to import MenuView.")
-        except (AttributeError, TypeError, IOError):
-            logger.error("Failed to save score or set MenuView.")
+        except IOError:
+            from src.mlx_wrapper.menu_view import MenuView
+            menu_view = MenuView(self.engine, self.manager, self.config)
+            self.manager.set_view(menu_view)
+        except (AttributeError, TypeError):
+            logger.error("Failed to set MenuView.")

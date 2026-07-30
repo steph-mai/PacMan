@@ -248,6 +248,13 @@ class GameView(BaseView):
                 self.session.player.queue_direction(SOUTH)
             elif keycode in (pygame.K_LEFT, pygame.K_a):
                 self.session.player.queue_direction(WEST)
+            elif keycode in (pygame.K_ESCAPE, pygame.K_p):
+                from src.mlx_wrapper.pause_view import PauseView
+                pause_view = PauseView(self.engine,
+                                       self.manager,
+                                       self,
+                                       self.config)
+                self.manager.set_view(pause_view)
             elif keycode == pygame.K_c:
                 self.session.cheat_mode_enabled = not \
                     self.session.cheat_mode_enabled
@@ -257,13 +264,6 @@ class GameView(BaseView):
                     self.session.player.speed_boost = False
             elif self.session.cheat_mode_enabled:
                 self._handle_cheat_key(keycode)
-            elif keycode in (pygame.K_ESCAPE, pygame.K_p):
-                from src.mlx_wrapper.pause_view import PauseView
-                pause_view = PauseView(self.engine,
-                                       self.manager,
-                                       self,
-                                       self.config)
-                self.manager.set_view(pause_view)
         except ImportError:
             logger.error("Failed to import PauseView.")
         except (AttributeError, TypeError):

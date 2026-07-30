@@ -231,7 +231,7 @@ class Config(BaseModel):
 
         if pacgum > DEFAULT_MAX_PACGUM:
             logger.warning(f"Pacgum count {pacgum} is too high. "
-                           f"Clamped to {DEFAULT_MAX_PACGUM}.")
+                           f"Clamped to 80% filling.")
             return DEFAULT_MAX_PACGUM
 
         return pacgum
