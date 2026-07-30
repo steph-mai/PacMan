@@ -8,6 +8,7 @@ and ignores comments in the configuration file.
 
 import json
 import logging
+import collections
 from pathlib import Path
 from src.parsing.models import Config
 
@@ -64,8 +65,20 @@ class Loader:
                            "Loading safe defaults.")
             return Config()
 
+        def _detect_duplicate_keys(list_of_pairs):
+            key_count = collections.Counter(k for k,v in list_of_pairs)
+            duplicate_keys = ', '.join(k for k,v in key_count.items() if v>1)
+
+            if len(duplicate_keys) != 0:
+                logging.warning("Duplicate keys in config file")
+
+        def _validate_data(list_of_pairs):
+            _detect_duplicate_keys(list_of_pairs)
+            return dict(list_of_pairs)
+
         try:
-            config_dict = json.loads(clean_json_str)
+            config_dict = json.loads(
+                clean_json_str, object_pairs_hook=_validate_data)
 
             if not isinstance(config_dict, dict):
                 logger.warning(f"Configuration root must be a dictionary "
