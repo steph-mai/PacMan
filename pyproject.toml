@@ -10,8 +10,9 @@ authors = [
 
 dependencies = [
     "pydantic",
-    "arcade",
     "mazegenerator",
+    "pygame",
+    "pyinstaller>=6.21.0",
 ]
 
 [dependency-groups]
@@ -22,4 +23,9 @@ dev = [
 ]
 
 [tool.uv.sources]
-mazegenerator = { path = "mazegen/mazegenerator-2.0.2-py3-none-any.whl" }
+mazegenerator = { path = "mazegen/mazegenerator-2.1.0-py3-none-any.whl" }
+
+[tool.mypy]
+[[tool.mypy.overrides]]
+module = "mazegenerator.*"
+ignore_missing_imports = true
