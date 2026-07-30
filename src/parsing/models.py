@@ -10,7 +10,7 @@ from pydantic import (
 
 logger = logging.getLogger("pacman")
 
-DEFAULT_HIGH_SCORES_FILE_NAME = "highscore.json"
+DEFAULT_HIGH_SCORES_FILE_NAME = "highscores.json"
 DEFAULT_LIVES = 3
 DEFAULT_PACGUM = 42
 DEFAULT_SEED = 42
