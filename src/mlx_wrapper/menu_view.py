@@ -36,7 +36,7 @@ class MenuView(BaseView):
         self.manager: GameManager = manager
         self.config: Config = config
 
-        self.options: list[str] = ["Start Game", "Instructions", "Quit"]
+        self.options: list[str] = ["START GAME", "INSTRUCTIONS", "QUIT"]
         self.selected_index: int = 0
 
         self.score_manager = HighScoreManager(self.config.highscore_filename)
@@ -86,7 +86,7 @@ class MenuView(BaseView):
 
         if not top_scores:
             self.engine.put_string(center_x - 60, score_title_y + 150,
-                                   "No scores yet",
+                                   "NO SCORE YET",
                                    (200, 200, 200))
         else:
             for rank, entry in enumerate(top_scores, start=1):

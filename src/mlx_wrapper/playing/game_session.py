@@ -206,7 +206,7 @@ class GameSession:
                     ghost.scared_timer = ghost.scared_delay
                     ghost.reverse_course()
 
-        if not self.pacgums and not self.super_pacgums:
+        if not self.pacgums:
             self.is_game_over = True
             self.is_victory = True
             return

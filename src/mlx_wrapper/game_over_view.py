@@ -74,12 +74,12 @@ class GameOverView(BaseView):
 
         score_y = title_y + 110
         self.engine.put_string(center_x - 100, score_y,
-                               f"Final Score: {self.final_score}",
+                               f"FINAL SCORE: {self.final_score}",
                                (255, 255, 255))
 
         input_label_y = score_y + 70
         self.engine.put_string(center_x - 220, input_label_y,
-                               "Enter Name (Press ENTER to save):",
+                               "ENTER NAME (PRESS ENTER TO SAVE):",
                                (255, 255, 255))
 
         input_y = input_label_y + 50
