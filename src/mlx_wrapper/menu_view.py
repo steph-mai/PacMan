@@ -39,7 +39,7 @@ class MenuView(BaseView):
         self.options: list[str] = ["Start Game", "Instructions", "Quit"]
         self.selected_index: int = 0
 
-        self.score_manager = HighScoreManager()
+        self.score_manager = HighScoreManager(self.config.highscore_filename)
 
     def on_update(self, delta_time: float) -> None:
         """

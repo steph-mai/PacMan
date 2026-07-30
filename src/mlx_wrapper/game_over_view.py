@@ -41,7 +41,7 @@ class GameOverView(BaseView):
         self.config: Config = config
         self.victory: bool = victory
 
-        self.score_manager = HighScoreManager()
+        self.score_manager = HighScoreManager(self.config.highscore_filename)
         self.player_name: str = ""
 
     def on_update(self, delta_time: float) -> None:
