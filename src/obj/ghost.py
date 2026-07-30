@@ -13,6 +13,9 @@ RESPAWN_DELAY: float = 5.0
 SCARED_DELAY: float = 10.0
 MOVE_DELAY: float = 0.25
 FLASH_DELAY: float = 3.0
+SCATTER_DELAY: float = 3.0
+CHASING_DELAY: float = 8.0
+
 
 RGBcolor = tuple[int, int, int]
 
@@ -186,6 +189,8 @@ class Ghost(Entity, ABC):
 
         return best_direction
 
+    import random
+
     def _choose_direction(
         self,
         maze: list[list[int]],
@@ -210,8 +215,9 @@ class Ghost(Entity, ABC):
 
         elif self.state == GhostState.CHASING:
             if self.is_scatter_phase:
-                direction = self._get_direction_towards_target(
-                    maze, self.spawn_row, self.spawn_col)
+                valid_directions = self._get_valid_directions(maze)
+                if valid_directions:
+                    direction = random.choice(valid_directions)
             else:
                 direction = self._get_next_direction(maze, player)
 

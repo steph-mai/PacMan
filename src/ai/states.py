@@ -18,3 +18,4 @@ class GhostState(Enum):
     CHASING = auto()
     RUNNING_AWAY = auto()
     DEAD = auto()
+    RANDOM = auto()

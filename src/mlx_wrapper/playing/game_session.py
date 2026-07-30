@@ -3,7 +3,7 @@ import logging
 import sys
 from src.obj.player import Player
 from src.obj.level import Level
-from src.obj.ghost import Ghost
+from src.obj.ghost import Ghost, CHASING_DELAY, SCATTER_DELAY
 from src.ai.behaviors import SpeedyGhost, ShadowGhost, BashfulGhost, PokeyGhost
 from src.ai.states import GhostState
 from src.parsing.models import Config
@@ -80,6 +80,9 @@ class GameSession:
         self._setup_collectibles()
         self._setup_ghosts()
 
+        self.phase_timer: float = 0.0
+        self.is_scatter_phase: bool = True
+
     def _setup_collectibles(self) -> None:
         """Populate the maze with pacgums and super-pacgums."""
         corners = [(0, 0), (0, self.cols - 1),
@@ -118,6 +121,46 @@ class GameSession:
                        (255, 165, 0))
         ]
 
+    def reverse_all_ghosts(self) -> None:
+        """Force all active chasing ghosts to immediately reverse
+        their direction.
+
+        This method is triggered during global phase transitions (e.g., from
+        Scatter to Chase). It explicitly ignores ghosts that are currently dead
+        or scared (running away) to prevent disrupting their specific
+        behaviors.
+        """
+        for ghost in self.ghosts:
+            if ghost.state == GhostState.CHASING:
+                ghost.reverse_course()
+
+    def update_ghosts_phase(self, delta_time: float) -> None:
+        """Update the global Chase/Scatter timer and trigger phase changes.
+
+        The global timer pauses while any ghost is scared. When the timer
+        exceeds the current phase's delay, it toggles the phase and forces
+        all active ghosts to reverse direction.
+
+        Args:
+            delta_time: The elapsed time since the previous update.
+        """
+        is_any_ghost_scared = any(
+            g.state == GhostState.RUNNING_AWAY for g in self.ghosts)
+        if is_any_ghost_scared:
+            return
+
+        self.phase_timer += delta_time
+
+        if self.phase_timer >= (
+                SCATTER_DELAY if self.is_scatter_phase else CHASING_DELAY):
+            self.phase_timer = 0.0
+            self.is_scatter_phase = not self.is_scatter_phase
+
+            for ghost in self.ghosts:
+                ghost.is_scatter_phase = self.is_scatter_phase
+
+            # self.reverse_all_ghosts()
+
     def update(self, delta_time: float) -> None:
         """
         Update the game state, move entities, and resolve collisions.
@@ -144,6 +187,7 @@ class GameSession:
         self.player.update_movement(delta_time, self.maze)
 
         if not self.ghosts_frozen:
+            self.update_ghosts_phase(delta_time)
             for ghost in self.ghosts:
                 ghost.update_movement(delta_time, self.maze, self.player)
 
