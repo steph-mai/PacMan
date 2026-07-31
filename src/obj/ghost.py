@@ -53,9 +53,10 @@ class Ghost(Entity, ABC):
         self.color = color
         self.death_timer: float = 0.0
         self.scared_timer: float = 0.0
+        self.scatter_timer: float = 0.0
         self.scared_delay = SCARED_DELAY
         self.respawn_delay = RESPAWN_DELAY
-        self.is_scatter_phase: bool = False
+        self.scatter_delay = SCATTER_DELAY
 
     @abstractmethod
     def _get_next_direction(
@@ -188,8 +189,6 @@ class Ghost(Entity, ABC):
                 best_direction = direction
 
         return best_direction
-
-    import random
 
     def _choose_direction(
         self,
