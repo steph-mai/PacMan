@@ -121,19 +121,6 @@ class GameSession:
                        (255, 165, 0))
         ]
 
-    def reverse_all_ghosts(self) -> None:
-        """Force all active chasing ghosts to immediately reverse
-        their direction.
-
-        This method is triggered during global phase transitions (e.g., from
-        Scatter to Chase). It explicitly ignores ghosts that are currently dead
-        or scared (running away) to prevent disrupting their specific
-        behaviors.
-        """
-        for ghost in self.ghosts:
-            if ghost.state == GhostState.CHASING:
-                ghost.reverse_course()
-
     def update_ghosts_phase(self, delta_time: float) -> None:
         """Update the global Chase/Scatter timer and trigger phase changes.
 
@@ -158,8 +145,6 @@ class GameSession:
 
             for ghost in self.ghosts:
                 ghost.is_scatter_phase = self.is_scatter_phase
-
-            # self.reverse_all_ghosts()
 
     def update(self, delta_time: float) -> None:
         """
