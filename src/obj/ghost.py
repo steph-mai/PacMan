@@ -57,6 +57,7 @@ class Ghost(Entity, ABC):
         self.scared_delay = SCARED_DELAY
         self.respawn_delay = RESPAWN_DELAY
         self.scatter_delay = SCATTER_DELAY
+        self.is_scatter_phase: bool = False
 
     @abstractmethod
     def _get_next_direction(
